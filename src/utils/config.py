@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     ollama_model = "llama3.2"
 
     #HugginFace
-    huggingface_token = os.get_env('HuggingFace_Token')
+    huggingface_token = 'HuggingFace_Token'
     huggingface_model = "mistralai/Mistral-7B-Instruct-v0.2"
 
     # Vector Store
@@ -57,6 +57,7 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Create necessary directories
+settings.huggingface_token
 settings.data_raw_dir.mkdir(parents=True, exist_ok=True)
 settings.data_processed_dir.mkdir(parents=True, exist_ok=True)
 settings.data_vector_dir.mkdir(parents=True, exist_ok=True)
