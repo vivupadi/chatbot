@@ -1,11 +1,11 @@
-RAG Based Chatbot
+# RAG Based Chatbot
 
 
-# TECH STACK
+## TECH STACK
 
-## Frontend
-## BackEnd
-## Hosting
-## Scaling
+### Frontend
+### BackEnd
+### Hosting
+### Scaling
 
-# LICENSES
+## LICENSES
