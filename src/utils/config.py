@@ -15,9 +15,9 @@ class Settings(BaseSettings):
 
     #Paths
     base_dir: Path = Path(__file__).parent.parent.parent
-    data_raw_dir: Path = Field(default_factory=lambda: Path(".//data//raw"))
-    data_processed_dir: Path = Field(default_factory = lambda: Path(".//data//processed"))
-    data_vector_dir: Path = Field(default_factory= lambda: Path(".//data//vector_db"))
+    data_raw_dir: Path = Field(default_factory=lambda: Path("./data/raw"))
+    data_processed_dir: Path = Field(default_factory = lambda: Path("./data/processed"))
+    data_vector_dir: Path = Field(default_factory= lambda: Path("./data/vector_db"))
 
 
     #Embedding Model
@@ -26,8 +26,8 @@ class Settings(BaseSettings):
 
 
     #Text processing
-    chunk_size = 1000
-    chunk_overlap = 200
+    chunk_size = 300
+    chunk_overlap = 50
 
 
     #LLM config
@@ -57,7 +57,7 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Create necessary directories
-settings.huggingface_token
+settings.huggingface_token = 'HuggingFace_Token'
 settings.data_raw_dir.mkdir(parents=True, exist_ok=True)
 settings.data_processed_dir.mkdir(parents=True, exist_ok=True)
 settings.data_vector_dir.mkdir(parents=True, exist_ok=True)
