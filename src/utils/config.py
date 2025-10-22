@@ -3,8 +3,7 @@ from pydantic import Field
 from pathlib import Path
 from typing import Literal
 
-import os
-from dot_env import load_dotenv
+
 
 
 class Settings(BaseSettings):
