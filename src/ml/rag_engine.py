@@ -2,15 +2,70 @@ from langchain_huggingface import HuggingFaceEndpoint
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
-from typing import Dict, Optional
+from typing import Dict,Any, List, Optional
 import logging
 import time
+
+from langchain_core.language_models.llms import LLM
+
+# New imports for HuggingFace
+from huggingface_hub import InferenceClient
 
 from src.data.vectorstore import VectorStore
 from src.utils.config import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+class HuggingFaceInferenceLLM(LLM):  # LangChain-compatible wrapper for HuggingFace InferenceClient
+    client: Any = None
+    model: str = ""
+    max_new_tokens: int = 512
+    temperature: float = 0.7
+    top_p: float = 0.95
+
+    def __init__(
+        self, 
+        token: str, 
+        model: str,
+        max_new_tokens: int = 512,
+        temperature: float = 0.7,
+        top_p: float = 0.95
+    ):
+        super().__init__()
+        self.client = InferenceClient(token=token)
+        self.model = model
+        self.max_new_tokens = max_new_tokens
+        self.temperature = temperature
+        self.top_p = top_p
+
+    @property
+    def _llm_type(self) -> str:
+        return "huggingface_inference"
+    
+    def _call(
+        self,
+        prompt: str,
+        stop: Optional[List[str]] = None,
+        **kwargs: Any,
+    ) -> str:
+        """Call the HuggingFace InferenceClient"""
+        try:
+            response = self.client.text_generation(
+                prompt,
+                model=self.model,
+                max_new_tokens=self.max_new_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                stop_sequences=stop,
+                **kwargs
+            )
+            return response
+        except Exception as e:
+            logger.error(f"HuggingFace inference error: {e}")
+            raise
+        
 
 
 class RAGengine:
@@ -50,14 +105,18 @@ class RAGengine:
         if not settings.huggingface_token:
             logger.warning("No HuggingFace Token found")
 
-        self.llm = HuggingFaceEndpoint(
-            repo_id = settings.huggingface_model,
-            huggingfacehub_api_token=settings.huggingface_token,
-            #max_new_token = 512,
-            temperature= 0.7,
-            top_p = 0.95
-        )
-        logger.info(f"✅ Using Hugging Face: {settings.huggingface_model}")
+        try:
+            self.llm = HuggingFaceInferenceLLM(
+                token=settings.huggingface_token,
+                model=settings.huggingface_model,
+                max_new_tokens=512,
+                temperature=0.7,
+                top_p=0.95
+            )
+            logger.info(f"✅ Using Hugging Face: {settings.huggingface_model}")
+        except Exception as e:
+            logger.error(f"Failed to initialize HuggingFace InferenceClient: {e}")
+            raise
 
     def _format_docs(self, docs):
         """Format retrieved documents for context"""
@@ -74,18 +133,23 @@ class RAGengine:
 
         Answer (be concise and accurate):"""
 
+
         prompt = PromptTemplate.from_template(template)
+        print(f"✅ Prompt created")
 
         # Get retriever from vector store
         retriever = self.vector_store.get_retriever()
+        print(f"✅ Retriever created")
 
         # Create RAG chain using LCEL (LangChain Expression Language)
-        # This uses the pipe operator | to chain operations
+        # CORRECT LCEL CHAIN STRUCTURE
+        from langchain_core.runnables import RunnableParallel, RunnableLambda
+        
         self.rag_chain = (
-            {
-                "context": retriever | self._format_docs,
-                "question": RunnablePassthrough()
-            }
+            RunnableParallel({
+                "context": retriever | RunnableLambda(self._format_docs),
+                "question": RunnableLambda(lambda x: x)
+            })
             | prompt
             | self.llm
             | StrOutputParser()
@@ -100,39 +164,50 @@ class RAGengine:
 
         logger.info(f"Query: {question}")
         start_time = time.time()
+        #breakpoint()
 
         try:
             # Get source documents first (for citation)
             source_docs = self.retriever.invoke(question)
+            print(f"✅ source test: {len(source_docs)} docs found")
 
+            #breakpoint()
             # Generate answer using RAG chain
             answer = self.rag_chain.invoke(question)
-
+            print("✅ ✅ ✅ ✅ ✅ ")
             #Calculate latency
             latency = time.time() - start_time
 
-            # Format sources
+            #breakpoint()
+            #Format sources
             sources = [
-                {
-                    "content": doc.page_content,
-                    "metadata": doc.metadata,
-                }
+                {"content": doc.page_content, "metadata": doc.metadata}
                 for doc in source_docs
             ]
 
-           # Format response
             response = {
                 "question": question,
                 "answer": answer.strip(),
                 "sources": sources,
                 "latency_seconds": round(latency, 2)
             }
+            breakpoint()
             
             logger.info(f"✅ Answer generated in {latency:.2f}s")
             return response
         
         except Exception as e:
             logger.error(f"Error during query{e}")
+            # ADD THESE LINES TO SEE THE REAL ERROR:
+            import traceback
+            print("\n" + "="*60)
+            print("FULL ERROR DETAILS:")
+            print("="*60)
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print(f"Error repr: {repr(e)}")
+            traceback.print_exc()
+            print("="*60 + "\n")
             return {
                 "question": question,
                 "answer": f"Error: {str(e)}",

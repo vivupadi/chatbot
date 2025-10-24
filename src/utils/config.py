@@ -35,7 +35,7 @@ class Settings(BaseSettings):
 
     #HugginFace
     huggingface_token: str = 'HuggingFace_Token'
-    huggingface_model: str = "google/flan-t5-large"
+    huggingface_model: str = "google/flan-t5-base"
 
     # Vector Store
     vector_store_type: Literal["chroma", "faiss"] = "chroma"
