@@ -34,8 +34,9 @@ class Settings(BaseSettings):
     ollama_model: str = "llama3.2"
 
     #HugginFace
-    huggingface_token: str = 'HuggingFace_Token'
-    huggingface_model: str = "google/flan-t5-base"
+    #huggingface_token: str = 'HuggingFace_Token'
+    featherless_ai_key_new: str = ''
+    huggingface_model: str = "mistralai/Mistral-7B-Instruct-v0.2"
 
     # Vector Store
     vector_store_type: Literal["chroma", "faiss"] = "chroma"
@@ -63,7 +64,6 @@ def get_settings() -> Settings:
 settings = get_settings()
 
 # Create necessary directories
-settings.huggingface_token = 'HuggingFace_Token'
 settings.data_raw_dir.mkdir(parents=True, exist_ok=True)
 settings.data_processed_dir.mkdir(parents=True, exist_ok=True)
 settings.data_vector_dir.mkdir(parents=True, exist_ok=True)

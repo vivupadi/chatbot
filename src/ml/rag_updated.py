@@ -1,15 +1,22 @@
 from langchain_huggingface import HuggingFaceEndpoint
 from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
-from typing import Dict,Any, List, Optional
-import logging
+
 import time
-
-from langchain_core.language_models.llms import LLM
-
-# New imports for HuggingFace
+import logging
+from typing import Any, List, Optional
+from langchain_core.language_models.llms import BaseLLM
+from langchain_core.outputs import LLMResult, Generation
+from langchain_core.callbacks.manager import CallbackManagerForLLMRun
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableParallel, RunnableLambda
 from huggingface_hub import InferenceClient
+from langchain_community.llms import Ollama
+
+import os
+import requests
+
+
 
 from src.data.vectorstore import VectorStore
 from src.utils.config import settings
@@ -18,105 +25,121 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class HuggingFaceInferenceLLM(LLM):  # LangChain-compatible wrapper for HuggingFace InferenceClient
-    client: Any = None
-    model: str = ""
-    max_new_tokens: int = 512
-    temperature: float = 0.7
-    top_p: float = 0.95
-
-    def __init__(
-        self, 
-        token: str, 
-        model: str,
-        max_new_tokens: int = 512,
-        temperature: float = 0.7,
-        top_p: float = 0.95
-    ):
-        super().__init__()
-        self.client = InferenceClient(token=token)
+class HuggingFaceInferenceLLM:  # LangChain-compatible wrapper for HuggingFace InferenceClient
+    def __init__(self, api_key: str, model: str = "mistralai/Mistral-7B-Instruct-v0.2",
+                 max_tokens: int = 512, temperature: float = 0.7, top_p: float = 0.95):
+        # Use Featherless AI directly
+        self.api_url = "https://api.featherless.ai/v1/chat/completions"
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
         self.model = model
-        self.max_new_tokens = max_new_tokens
+        self.max_tokens = max_tokens
         self.temperature = temperature
         self.top_p = top_p
-
-    @property
-    def _llm_type(self) -> str:
-        return "huggingface_inference"
+        logger.info(f"✅ Using Featherless AI: {model}")
     
-    def _call(
-        self,
-        prompt: str,
-        stop: Optional[List[str]] = None,
-        **kwargs: Any,
-    ) -> str:
-        """Call the HuggingFace InferenceClient"""
-        try:
-            response = self.client.text_generation(
-                prompt,
-                model=self.model,
-                max_new_tokens=self.max_new_tokens,
-                temperature=self.temperature,
-                top_p=self.top_p,
-                stop_sequences=stop,
-                **kwargs
-            )
-            return response
-        except Exception as e:
-            logger.error(f"HuggingFace inference error: {e}")
-            raise
+    def invoke(self, input_data, **kwargs):
+        """Invoke the model with a prompt"""
+        # Extract prompt text
+        if hasattr(input_data, 'to_string'):
+            prompt = input_data.to_string()
+        else:
+            prompt = str(input_data)
         
+        # Prepare the payload
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": kwargs.get('max_tokens', self.max_tokens),
+            "temperature": kwargs.get('temperature', self.temperature),
+            "top_p": kwargs.get('top_p', self.top_p),
+        }
+        
+        try:
+            logger.debug(f"🔄 Calling Featherless AI with model: {self.model}")
+            response = requests.post(
+                self.api_url, 
+                headers=self.headers, 
+                json=payload, 
+                timeout=60
+            )
+            
+            # Better error handling
+            if response.status_code == 401:
+                logger.error("❌ Featherless AI authentication failed!")
+                logger.error(f"Check your API key starts correctly")
+                logger.error(f"Response: {response.text}")
+            
+            response.raise_for_status()
+            
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"❌ Featherless AI call failed: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                logger.error(f"Response: {e.response.text}")
+            raise
+    
+    def __call__(self, prompt, **kwargs):
+        """Make the class callable"""
+        return self.invoke(prompt, **kwargs)
+    
 
 
 class RAGengine:
-    def __init__(self, vectorstore = None):
+    def __init__(self, vectorstore=None):
         logger.info("Initializing RAG Engine")
 
-        #Initialize vectorstore
-        self.vector_store = VectorStore()
+        # Initialize vectorstore
+        if vectorstore is not None:
+            self.vector_store = vectorstore
+        else:
+            self.vector_store = VectorStore()
 
-        #Initialize LLM
+        # Initialize LLM
         self._init_llm()
 
-
-        #Setup RAG chain
+        # Setup RAG chain
         self._setup_chain()
 
         logger.info("RAG Engine Initialized")
-
+    
     def _init_llm(self):
         if settings.use_ollama:
             try:
-                from langchain_community.llms import Ollama
+
+                print("✅ Using Ollama")
                 self.llm = Ollama(
-                    base_url = settings.ollama_base_url,
-                    model = settings.ollama_model,
-                    temperature= 0.7
+                    base_url=settings.ollama_base_url,
+                    model=settings.ollama_model,
+                    temperature=0.7
                 )
-                logger.info(f"Using Ollama:{settings.ollama_model}")
+                logger.info(f"Using Ollama: {settings.ollama_model}")
+
             except Exception as e:
-                logger.warning(f"Ollama not available:{e}")
-                logger.info("Falling back to HuggingFAce...")
+                logger.warning(f"Ollama not available: {e}")
+                logger.info("Falling back to HuggingFace...")
                 self._init_huggingface_llm()
         else:
             self._init_huggingface_llm()
 
     def _init_huggingface_llm(self):
-        if not settings.huggingface_token:
-            logger.warning("No HuggingFace Token found")
-
-        try:
-            self.llm = HuggingFaceInferenceLLM(
-                token=settings.huggingface_token,
-                model=settings.huggingface_model,
-                max_new_tokens=512,
-                temperature=0.7,
-                top_p=0.95
-            )
-            logger.info(f"✅ Using Hugging Face: {settings.huggingface_model}")
-        except Exception as e:
-            logger.error(f"Failed to initialize HuggingFace InferenceClient: {e}")
-            raise
+        # Get Featherless API key (NOT HuggingFace token)
+        api_key = settings.featherless_ai_key_new or os.environ.get("FEATHERLESS_API_KEY")
+        
+        if not api_key:
+            raise ValueError("FEATHERLESS_API_KEY required! Get it from https://featherless.ai/")
+        
+        # Log partial key for debugging
+        logger.info(f"🔑 Using Featherless key: {api_key[:8]}...{api_key[-4:]}")
+        
+        model = getattr(settings, 'huggingface_model', 'mistralai/Mistral-7B-Instruct-v0.2')
+        
+        self.llm = HuggingFaceInferenceLLM(api_key=api_key, model=model)
+        logger.info(f"✅ LLM initialized")
 
     def _format_docs(self, docs):
         """Format retrieved documents for context"""
@@ -132,7 +155,6 @@ class RAGengine:
         Question: {question}
 
         Answer (be concise and accurate):"""
-
 
         prompt = PromptTemplate.from_template(template)
         print(f"✅ Prompt created")
@@ -169,12 +191,11 @@ class RAGengine:
         try:
             # Get source documents first (for citation)
             source_docs = self.retriever.invoke(question)
-            print(f"✅ source test: {len(source_docs)} docs found")
 
             #breakpoint()
             # Generate answer using RAG chain
             answer = self.rag_chain.invoke(question)
-            print("✅ ✅ ✅ ✅ ✅ ")
+            
             #Calculate latency
             latency = time.time() - start_time
 
@@ -191,7 +212,7 @@ class RAGengine:
                 "sources": sources,
                 "latency_seconds": round(latency, 2)
             }
-            breakpoint()
+            
             
             logger.info(f"✅ Answer generated in {latency:.2f}s")
             return response
@@ -200,12 +221,12 @@ class RAGengine:
             logger.error(f"Error during query{e}")
             # ADD THESE LINES TO SEE THE REAL ERROR:
             import traceback
-            print("\n" + "="*60)
+            #print("\n" + "="*60)
             print("FULL ERROR DETAILS:")
             print("="*60)
             print(f"Error type: {type(e).__name__}")
             print(f"Error message: {str(e)}")
-            print(f"Error repr: {repr(e)}")
+            #print(f"Error repr: {repr(e)}")
             traceback.print_exc()
             print("="*60 + "\n")
             return {
@@ -221,12 +242,19 @@ if __name__ == "__main__":
     # Initialize RAG engine
     rag = RAGengine()
     
+
+    llm = RAGengine()
+    sucess = llm._init_huggingface_llm
+
+    #print(f"model successfully initiaized:{sucess}++++++")
+    #breakpoint()
     # Test queries
     test_questions = [
         "What is my Python experience?",
         "Tell me about my projects",
         "What are my technical skills?",
-        "What is my educational background?"
+        "What is my educational background?",
+        "What is my Job experience?"
     ]
     
     print("\n" + "="*60)
