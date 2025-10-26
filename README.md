@@ -10,25 +10,26 @@ Chromadb is used as the vectorstore. The embedding models used was "sentence-tra
 Chunking strategy initially used was fixed chunking with  chunk_size(300) and chunk_overlap(50) (Since the documents are sourced from personal cv and website portfolio).
 
 What happens inside the vectorstore.py script???
+
 Original Document
 
-    ↓
+↓
     
 [chunk_documents()]
 
-    ↓
+↓
     
 Text Chunks (still text!)
 
-    ↓
+↓
     
 [add_texts() calls embedding_function.embed_query()]
 
-    ↓
+↓
     
 Each chunk → HuggingFaceEmbeddings → Vector
 
-    ↓
+↓
     
 ChromaDB stores:
   - Text: "chunk content"
