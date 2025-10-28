@@ -37,7 +37,21 @@ Chunking strategy initially used was fixed chunking with  chunk_size(300) and ch
       - Metadata: {...}
     
 #### LLM model
-The LLM model used is mistralai/Mistral-7B-Instruct-v0.2 called using Featherless_ai(10$ paid plan).
+The LLM model used is mistralai/Mistral-7B-Instruct-v0.2 called using Featherless_ai.
+
+#### FastAPI
+- Backend server to create API endpoints
+- Receiving user questions
+- Processing queries through the RAG system
+- Returning AI-generated responses
+
+Key Features:**
+- Async/await support for high concurrency
+- Built-in request/response validation
+- CORS middleware for cross-origin requests
+- Automatic interactive API docs at `/docs`
+- Type-safe API development
+
 ### Hosting
 ### Scaling
 
