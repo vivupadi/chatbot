@@ -5,15 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAG Chatbot</title>
     <style>
-        body {
-
-        }
+        body { padding: 50px; font-family: Arial; }
+        #chat { border: 1px solid #ccc; height: 300px; padding: 10px; overflow-y: scroll; }
+        input { width: 70%; padding: 10px; }
+        button { padding: 10px 20px; }
     </style>
 </head>
 
 <body>
+    <input id="question" type="text" placeholder="Ask something...">
+    <button onclick="askQuestion()">Send</button>
     <script>
-        
+        const API_url = 'http://localhost:8000'
+
+        async function askQuestion(){
+            const questionInput = document.getElementById('question');
+            const question = questionInput.value;
+
+            //show user's question in chat
+            document.getElementById('chat').innerHTML +=<p><strong> You: </strong> ${question}</p>;
+
+            //clear the input
+            questionInput.value = '';
+
+            //TAlking to the API
+            const response = await fetch(`${API_URL}/query`, {
+                method: 'POST',  // We're sending data (POST request)
+                headers: {
+                    'Content-Type': 'application/json'  // We're sending JSON
+                },
+                body: JSON.stringify({
+                    question: question,  // The user's question
+                    top_k: 3            // Get 3 documents
+                })
+            });
+
+            const data = await response.json();
+
+            // Show AI's answer in chat
+            document.getElementById('chat').innerHTML += 
+                `<p><strong>AI:</strong> ${data.answer}</p>`;
+            
+            // Scroll to bottom
+            const chat = document.getElementById('chat');
+            chat.scrollTop = chat.scrollHeight;
+        }
     </script>
 
 </body>
