@@ -31,7 +31,7 @@ class QueryResponse(BaseModel):
     question: str
     answer: str
     sources: List[Dict]
-    latency_sconds: float
+    latency_seconds: float
 
 class IngestURLRequest(BaseModel):
     url: str = Field(..., description="URL to scrape and ingest")
