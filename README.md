@@ -4,6 +4,10 @@ An Enterprise-grade chatbot to fetch answers about Vivek's Professional Life. Ho
 ## TECH STACK
 
 ### Frontend
+Simple html-based UI that fetches the endpoints from FastAPI server.
+
+![til](https://github.com/vivupadi/chatbot/blob/main/chatbot_snippet.jpg)
+
 ### BackEnd
 #### VectorStore
 Chromadb is used as the vectorstore. The embedding models used was "sentence-transformers/all-MiniLM-L6-v2"
