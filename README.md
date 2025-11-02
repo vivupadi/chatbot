@@ -57,6 +57,8 @@ Key Features:**
 - Type-safe API development
 
 ### Hosting
+Docker Image --> Oracle Kubernetes free tier
+
 ### Scaling
 
 ## LICENSES
