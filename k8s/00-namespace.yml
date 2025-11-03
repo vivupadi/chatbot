@@ -1,0 +1,7 @@
+apiVersion: 01
+kind: Namespace
+metadata:
+  name: rag-chatbot
+  labels: 
+    name: rag-chatbot
+    environment: production

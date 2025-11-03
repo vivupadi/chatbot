@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-config
+  namespace: rag-chatbot
+data:
+  # Ollama Configuration
+  #OLLAMA_BASE_URL: "http://ollama-service:11434"
+  #OLLAMA_MODEL: "llama3.2"
+  #USE_OLLAMA: "true"
+  
+  # ChromaDB Configuration
+  CHROMA_HOST: "chromadb-service"
+  CHROMA_PORT: "8000"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  
+  # Application Configuration
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "production"
+  PRIMARY_LLM: "huggingface"
+  
+  # Model Configuration
+  EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
+  MAX_RETRIES: "3"
+  TIMEOUT: "60"
+  
+  # Vector Store Configuration
+  COLLECTION_NAME: "rag_documents"
+  CHUNK_SIZE: "300"
+  CHUNK_OVERLAP: "50"
