@@ -58,7 +58,7 @@ class RAGengine:
 
     def _init_huggingface_llm(self):
         # Get Featherless API key (NOT HuggingFace token)
-        api_key = settings.featherless_ai_key_new or os.environ.get("FEATHERLESS_API_KEY")
+        api_key = settings.Featherless_ai_key_new or os.environ.get("FEATHERLESS_API_KEY")
         
         if not api_key:
             raise ValueError("FEATHERLESS_API_KEY required! Get it from https://featherless.ai/")

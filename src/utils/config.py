@@ -35,7 +35,7 @@ class Settings(BaseSettings):
 
     #HugginFace
     #huggingface_token: str = 'HuggingFace_Token'
-    featherless_ai_key_new: str = ''
+    Featherless_ai_key_new: str = ''
     huggingface_model: str = "mistralai/Mistral-7B-Instruct-v0.2"
 
     # Vector Store
