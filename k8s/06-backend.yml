@@ -1,0 +1,207 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-backend
+  namespace: rag-chatbot
+  labels:
+    app: rag-backend
+    tier: application
+spec:
+  replicas: 2  # Run 2 replicas for high availability
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero downtime deployment
+  selector:
+    matchLabels:
+      app: rag-backend
+  template:
+    metadata:
+      labels:
+        app: rag-backend
+        tier: application
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Init containers to wait for dependencies
+      initContainers:
+      
+      - name: wait-for-chromadb
+        image: busybox:1.36
+        command:
+        - 'sh'
+        - '-c'
+        - |
+          echo "Waiting for ChromaDB to be ready..."
+          until wget -q --spider http://chromadb-service:8000/api/v1/heartbeat; do
+            echo "ChromaDB is unavailable - sleeping"
+            sleep 5
+          done
+          echo "ChromaDB is ready!"
+      
+      containers:
+      - name: backend
+        image: your-dockerhub-username/rag-backend:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        
+        env:
+        # ConfigMap values
+        - name: CHROMA_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: rag-config
+              key: CHROMA_HOST
+        - name: CHROMA_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rag-config
+              key: CHROMA_PORT
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: rag-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: rag-config
+              key: REDIS_PORT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: rag-config
+              key: LOG_LEVEL
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: rag-config
+              key: ENVIRONMENT
+        - name: PRIMARY_LLM
+          valueFrom:
+            configMapKeyRef:
+              name: rag-config
+              key: PRIMARY_LLM
+        
+        # Secret values
+        - name: HUGGINGFACE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: rag-secrets
+              key: HUGGINGFACE_API_KEY
+        
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30
+        
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+      
+      securityContext:
+        fsGroup: 1000
+      
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-backend-service
+  namespace: rag-chatbot
+  labels:
+    app: rag-backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: rag-backend
+  sessionAffinity: None
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rag-backend-hpa
+  namespace: rag-chatbot
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rag-backend
+  minReplicas: 2
+  maxReplicas: 4  # Limited for Oracle free tier
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
