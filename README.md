@@ -56,9 +56,18 @@ Key Features:**
 - Automatic interactive API docs at `/docs`
 - Type-safe API development
 
-### Hosting
+### Hosting & Scaling
 Docker Image --> Oracle Kubernetes free tier
 
-### Scaling
+K8 Manifests(yaml): 
+- Namespace
+- ConfigMap
+- Secrets
+- Persistent Volume Claim
+- Chroma DB
+- Redis
+- Ingress
+- Backend
+
 
 ## LICENSES
