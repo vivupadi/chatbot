@@ -71,3 +71,8 @@ K8 Manifests(yaml):
 
 
 ## LICENSES
+
+
+
+<div align="center">
+⭐ Star this repo if you find it helpful!
