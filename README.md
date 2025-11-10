@@ -72,6 +72,8 @@ K8 Manifests(yaml):
 
 ## LICENSES
 
+This project is licensed under the MIT License - see the [License](LICENSE) file for details.
+
 
 
 <div align="center">
