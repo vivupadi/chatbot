@@ -7,6 +7,8 @@ import logging
 import time
 from pathlib import Path
 
+from fastapi.responses import FileResponse
+
 from src.ml.rag_updated import RAGengine
 from src.data.ingestion import DocumentIngestion
 from src.data.vectorstore import VectorStore
@@ -101,13 +103,15 @@ async def query_endpoint(request: QueryRequest):
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {
-        "message": "RAG MLOps Chatbot API",
-        "version": "0.1.0",
-        "endpoints": {
-            "query": "/query",
-        }
-    }
+    return FileResponse("index.html")
+    
+    #return {
+    #    "message": "RAG MLOps Chatbot API",
+    #    "version": "0.1.0",
+    #    "endpoints": {
+    #        "query": "/query",
+    #    }
+    #}
 
 if __name__ == "__main__":
     import uvicorn
