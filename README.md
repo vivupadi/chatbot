@@ -57,7 +57,7 @@ Key Features:**
 - Type-safe API development
 
 ### Hosting & Scaling
-Docker Image --> Oracle Kubernetes free tier
+Docker Image --> Oracle Kubernetes free tier (in progress)
 
 K8 Manifests(yaml): 
 - Namespace
@@ -69,6 +69,9 @@ K8 Manifests(yaml):
 - Ingress
 - Backend
 
+## Monitoring And Evaluation
+
+Prometheues and DeepEval(In progress) 
 
 ## LICENSES
 
