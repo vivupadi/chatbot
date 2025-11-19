@@ -14,7 +14,7 @@
 
 <body>
     <div id="chat"></div>
-    <input id="question" type="text" placeholder="Ask something...">
+    <input id="question" type="text" placeholder="Ask something about Vivek...">
     <button onclick="askQuestion()">Send</button>
     <script>
         const API_URL = 'http://localhost:8000'
@@ -37,7 +37,7 @@
                 },
                 body: JSON.stringify({
                     question: question,  // The user's question
-                    top_k: 3            // Get 3 documents
+                    top_k: 4           // Get 4 documents
                 })
             });
 
