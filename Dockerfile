@@ -19,6 +19,9 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir --user -r requirements.txt
 
+#verify uvicorn installation
+RUN uvicorn --version
+
 # Stage 2: Runtime
 FROM python:3.11-slim
 
