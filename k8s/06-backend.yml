@@ -64,16 +64,6 @@ spec:
             configMapKeyRef:
               name: rag-config
               key: CHROMA_PORT
-        - name: REDIS_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: rag-config
-              key: REDIS_HOST
-        - name: REDIS_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: rag-config
-              key: REDIS_PORT
         - name: LOG_LEVEL
           valueFrom:
             configMapKeyRef:
