@@ -67,7 +67,6 @@ K8 Manifests(yaml):
 - Secrets
 - Persistent Volume Claim
 - Chroma DB
-- Redis
 - Ingress
 - Backend
 
