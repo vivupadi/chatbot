@@ -6,6 +6,7 @@ from typing import List, Optional, Dict
 import logging
 import time
 from pathlib import Path
+import uvicorn
 
 from fastapi.responses import FileResponse
 
@@ -114,5 +115,4 @@ async def root():
     #}
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
