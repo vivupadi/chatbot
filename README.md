@@ -9,6 +9,11 @@ Frontend & Backend docker images for independent approach.
 ## TECH STACK
 
 ### Frontend
+
+Files
+- index.html
+- nginx.conf
+
 Simple html-based UI that fetches the endpoints from FastAPI server.
 
 ![til](https://github.com/vivupadi/chatbot/blob/main/chatbot_snippet.jpg)
