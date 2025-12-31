@@ -17,8 +17,8 @@
     <input id="question" type="text" placeholder="Ask something about Vivek...">
     <button onclick="askQuestion()">Send</button>
     <script>
-        const API_URL = 'http://localhost:8000'
-
+        //const API_URL = 'http://localhost:8000'   //Use & merge it to for single container access 'http://localhost:8000'
+        const API_URL = '/api'
         async function askQuestion(){
             const questionInput = document.getElementById('question');
             const question = questionInput.value;
