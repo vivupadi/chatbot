@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir --prefix=/opt/venv -r requirements.txt
 RUN ls -la /opt/venv
 
 #verify uvicorn installation
-RUN uvicorn --version
+#RUN /opt/venv/bin/uvicorn --version
 
 # Stage 2: Runtime
 FROM python:3.11-slim
@@ -56,4 +56,4 @@ USER appuser
 EXPOSE 8000
 
 # Run the application
-CMD ["python", "-m", "uvicorn", "src.serving.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "src.serving.api_server:app", "--host", "0.0.0.0", "--port", "8000"]
