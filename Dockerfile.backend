@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for RAG Backend
-# Optimized for Oracle Cloud ARM (aarch64) architecture
+# Optimized for Hetzner architecture
 
 # Stage 1: Builder
 FROM python:3.11-slim as builder
@@ -41,7 +41,10 @@ COPY src/ ./src/
 ENV PATH=/root/.local/bin:$PATH
 
 # Create non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app && \
+    chown -R appuser:appuser /root/.local
+    
 USER appuser
 
 # Health check endpoint
