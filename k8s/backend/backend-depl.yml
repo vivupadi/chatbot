@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: rag-backend
-        tier: application
+        
 
     spec:
       
@@ -68,7 +68,7 @@ spec:
         # THE IMPORTANT PART - Mount the permanent folder
         volumeMounts:
         - name: chroma-data
-          mountPath: /app/chroma_data
+          mountPath: /app/data/vector_db
         
         resources:
           requests:
