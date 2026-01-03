@@ -9,7 +9,6 @@ spec:
   type: ClusterIP  # Internal only
   selector:
     app: rag-backend
-    tier: application
   ports:
   - port: 8000
     targetPort: 8000
