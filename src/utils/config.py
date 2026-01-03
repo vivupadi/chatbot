@@ -64,6 +64,13 @@ def get_settings() -> Settings:
 settings = get_settings()
 
 # Create necessary directories
-settings.data_raw_dir.mkdir(parents=True, exist_ok=True)
-settings.data_processed_dir.mkdir(parents=True, exist_ok=True)
-settings.data_vector_dir.mkdir(parents=True, exist_ok=True)
+try:
+    settings.data_raw_dir.mkdir(parents=True, exist_ok=True)
+    settings.data_processed_dir.mkdir(parents=True, exist_ok=True)
+    settings.data_vector_dir.mkdir(parents=True, exist_ok=True)
+except PermissionError:
+    #Container mode
+    pass
+except Exception as e:
+    #Log but dont crash
+    print(f"Note: Could not create directories: {e}")
