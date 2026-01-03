@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata: 
   name: chroma-pvc
-  namespace: rag-chatbot
+  namespace: rag-dev
 spec:
   accessModes:
     - ReadWriteOnce

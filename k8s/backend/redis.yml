@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  namespace: rag-chatbot
+  namespace: rag-dev
   labels:
     app: redis
     tier: cache

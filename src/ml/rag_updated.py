@@ -10,6 +10,8 @@ from langchain_core.runnables import RunnableParallel, RunnableLambda
 from langchain_community.llms import Ollama
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from src.data.vectorstore import VectorStore
 from src.utils.config import settings
@@ -58,7 +60,8 @@ class RAGengine:
 
     def _init_huggingface_llm(self):
         # Get Featherless API key (NOT HuggingFace token)
-        api_key = settings.Featherless_ai_key_new or os.environ.get("FEATHERLESS_API_KEY")
+
+        api_key = settings.Featherless_ai_key_new or os.getenv("Featherless_ai_key_new")
         
         if not api_key:
             raise ValueError("FEATHERLESS_API_KEY required! Get it from https://featherless.ai/")
@@ -179,9 +182,9 @@ if __name__ == "__main__":
     #breakpoint()
     # Test queries
     test_questions = [
-        "What is my Python experience?",
+        "What is my address?",
         "Tell me about my projects",
-        "What are my technical skills?",
+        "What are my email address?",
         "What is my educational background?",
         "What is my Job experience?"
     ]
