@@ -1,10 +1,9 @@
 # RAG Based Chatbot
-An Enterprise-grade chatbot to fetch answers about Vivek's Professional Life. Hosted and scaled on Oracle. (In progress)
+An Enterprise-grade chatbot to fetch answers about Vivek's Professional Life. Hosted on Hetzner Cloud using Kubernetes. (In progress)
 
-Edit:
-Hosting on 'Hetzner' for cost optimization.
+[Link to test the chatbot](https://github.com/vivupadi/chatbot/blob/main/chatbot_snippet.jpg) (**Click on send button in the terminal)
 
-Frontend & Backend docker images for independent approach.
+Multi Image approach: Frontend & Backend docker images
 
 ## TECH STACK
 
@@ -71,16 +70,18 @@ Docker Image --> Oracle Kubernetes free tier (in progress)
 
 K8 Manifests(yaml): 
 - Namespace
-- ConfigMap
 - Secrets
-- Persistent Volume Claim
-- Chroma DB
-- Ingress
-- Backend
+- Backend:
+  - Backend-depl
+  - Backend-svc
+  - Configmap
+- Frontend
+  - Frontend-depl
+  - Frontend-svc
 
 ## Monitoring And Evaluation
 
-Prometheues and DeepEval(In progress) 
+Prometheues and DeepEval(Next steps) 
 
 ## LICENSES
 
