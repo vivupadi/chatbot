@@ -27,7 +27,7 @@ spec:
       containers:
       - name: backend
         image: vivupadi/rag-backend:latest
-        imagePullPolicy: Never
+        imagePullPolicy: Always
         
         ports:
         - name: http
