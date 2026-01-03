@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: frontend-image:latest  # image on hetzner
-        imagePullPolicy: Always
+        image: vivupadi/rag-frontend:latest  # image on hetzner
+        imagePullPolicy: Never
         ports:
         - containerPort: 80
           name: http

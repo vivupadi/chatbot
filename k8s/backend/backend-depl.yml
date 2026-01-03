@@ -26,8 +26,8 @@ spec:
       
       containers:
       - name: backend
-        image: backend-image:latest
-        imagePullPolicy: Always
+        image: vivupadi/rag-backend:latest
+        imagePullPolicy: Never
         
         ports:
         - name: http
@@ -65,7 +65,7 @@ spec:
               key: Featherless_ai_key_new
         
 
-        # 🔽 THE IMPORTANT PART - Mount the permanent folder
+        # THE IMPORTANT PART - Mount the permanent folder
         volumeMounts:
         - name: chroma-data
           mountPath: /app/chroma_data
@@ -78,11 +78,11 @@ spec:
             memory: "512Mi"
             cpu: "500m"
       
-      # 🔽 THE IMPORTANT PART - Define where the permanent folder is
+      # THE IMPORTANT PART - Define where the permanent folder is
       volumes:
       - name: chroma-data
         hostPath:
-          path: /data/chroma  # On your Hetzner server
+          path: /data/chroma  # On Hetzner server
           type: DirectoryOrCreate
 
         
