@@ -4,9 +4,10 @@ An Enterprise-grade chatbot to fetch answers about Vivek's Professional Life. Ho
 [Link to test the chatbot](http://188.245.71.76:30080/) 
 (**Click on send button in the terminal)
 
-Multi Image approach: Frontend & Backend docker images
 
 ## TECH STACK
+
+Multi Image approach: Frontend & Backend docker images
 
 ### Frontend
 
