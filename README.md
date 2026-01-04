@@ -7,7 +7,9 @@ An Enterprise-grade chatbot to fetch answers about Vivek's Professional Life. Ho
 
 ## TECH STACK
 
-Multi Image approach: Frontend & Backend docker images
+Multi Image approach: 
+
+Frontend & Backend independent docker images
 
 ### Frontend
 
