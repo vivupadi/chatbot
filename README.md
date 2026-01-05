@@ -70,22 +70,29 @@ Key Features:**
 - Type-safe API development
 
 ### Hosting & Scaling
-Docker Image --> Oracle Kubernetes free tier (in progress)
+Docker Image --> Hetzner Cloud --> Kubernetes(K3s)
 
 K8 Manifests(yaml): 
 - Namespace
 - Secrets
 - Backend:
   - Backend-depl
-  - Backend-svc
+  - Backend-svc (type ClusterIP)
   - Configmap
 - Frontend
   - Frontend-depl
-  - Frontend-svc
+  - Frontend-svc (type NodePort)
 
+### Next Steps
 ## Monitoring And Evaluation
 
 Prometheues and DeepEval(Next steps) 
+
+## Cache using redis
+
+## Hybrid approach
+
+N.B: Observed dependency issue with Ollama and ChromaDB. Currently I have commented out Ollama.
 
 ## LICENSES
 
