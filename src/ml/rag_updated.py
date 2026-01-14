@@ -186,7 +186,8 @@ if __name__ == "__main__":
         "Tell me about my projects",
         "What are my email address?",
         "What is my educational background?",
-        "What is my Job experience?"
+        "What is my Job experience?",
+        "Does Vivek have MLOps experience??"
     ]
     
     print("\n" + "="*60)

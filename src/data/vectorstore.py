@@ -48,7 +48,19 @@ class VectorStore:
             chunk_size = chunk_size,
             chunk_overlap  = chunk_overlap,
             length_function = len,
-            separators = ["\n\n", "\n", " ", ""]
+            separators = [
+                "\n\n", 
+                "\nPersonal Information", 
+                "\nWork Experience", 
+                "\nResearch and Projects",
+                "\nEducation",
+                "\nCore Skills", 
+                "\nLanguages",
+                "\nCourses and Licenses",
+                "\no ", 
+                " ", 
+                ""
+                ]
         )
 
         chunked_docs = []

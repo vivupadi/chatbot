@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
 
     #Text processing
-    chunk_size:int = 300
+    chunk_size:int = 512
     chunk_overlap:int = 50
 
 
