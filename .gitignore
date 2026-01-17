@@ -6,7 +6,7 @@ ssh_password.txt
 
 # Python
 __pycache__/
-__pytest_cache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 *.so
