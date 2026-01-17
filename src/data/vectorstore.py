@@ -60,7 +60,7 @@ class VectorStore:
                 "\no ", 
                 " ", 
                 ""
-            ]
+                ]
         )
 
         chunked_docs = []

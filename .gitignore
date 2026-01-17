@@ -4,8 +4,7 @@ structure.docx
 chatbot_snippet.jpg
 ssh_password.txt
 
-# Python cache
-__pycache__/
+__pycache__
 *.py[cod]
 *.pyc
 *.pyo
@@ -14,4 +13,5 @@ __pycache__/
 src/data/__pycache__
 src/ml/__pycache__
 src/utils/__pycache__
+src.data/__pycache__
 .pytest_cache
