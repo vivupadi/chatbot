@@ -9,3 +9,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+src/ml/__pycache__
+src/serving/__pycache__
+src/utils/__pycache__
