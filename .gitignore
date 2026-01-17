@@ -4,13 +4,14 @@ structure.docx
 chatbot_snippet.jpg
 ssh_password.txt
 
-# Python
-__pycache__/
-.pytest_cache/
+__pycache__
 *.py[cod]
-*$py.class
-*.so
+*.pyc
+*.pyo
+*.pyd
 
+src/data/__pycache__
 src/ml/__pycache__
-src/serving/__pycache__
 src/utils/__pycache__
+src.data/__pycache__
+.pytest_cache
