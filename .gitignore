@@ -3,3 +3,9 @@ structure.docx
 .env
 chatbot_snippet.jpg
 ssh_password.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
