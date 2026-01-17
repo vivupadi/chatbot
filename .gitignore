@@ -13,5 +13,5 @@ __pycache__
 src/data/__pycache__
 src/ml/__pycache__
 src/utils/__pycache__
-src.data/__pycache__
+src/data/__pycache__
 .pytest_cache
