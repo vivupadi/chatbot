@@ -16,6 +16,15 @@ from src.data.vectorstore import VectorStore
 from src.utils.config import settings
 
 from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Gauge
+from prometheus_client import Histogram  # ← Import for custom metrics
+import time
+
+# Custom metric for initialization
+initialization_duration = Gauge(
+    'rag_initialization_duration_seconds',
+    'Time taken to initialize RAG components'
+)
 
 #set logging
 logging.basicConfig(level=logging.INFO)
@@ -54,11 +63,16 @@ async def lifespan(app: FastAPI):
     global rag_engine, vector_store, document_ingestion   #Intialize everything on startup
 
     logger.info("=====Starting RAG Chatbot API=====")
+    start_time = time.time()
 
     try:
         vector_store=VectorStore()
         rag_engine = RAGengine(vectorstore=vector_store)
         document_ingestion = DocumentIngestion()
+
+        duration = time.time() - start_time
+        initialization_duration.set(duration)
+        logger.info(f"✅ RAG services initialized in {duration:.2f}s")
     except Exception as e:
         logger.error(f"Failed to initialize services:{e}")
         raise
@@ -78,7 +92,15 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-Instrumentator().instrument(app).expose(app)
+Instrumentator().instrument(app).expose(app)   #Prometheus metric initialized
+
+#For custom Prometheus metrics
+llm_latency = Histogram(
+    'llm_inference_seconds',
+    'Time for LLM inference',
+    buckets=[0.5, 1.0, 2.0, 5.0, 10.0]
+)
+
 
 # CORS middleware
 app.add_middleware(
@@ -94,9 +116,12 @@ app.add_middleware(
 async def query_endpoint(request: QueryRequest):
     try:
         logger.info(f"Receeived query: {request.question}")
-
+        
+        # Measure LLM time
+        start = time.time()
         #Query rag engine
         response = rag_engine.query(request.question)
+        llm_latency.observe(time.time() - start)
 
         return QueryResponse(**response)
     except Exception as e:

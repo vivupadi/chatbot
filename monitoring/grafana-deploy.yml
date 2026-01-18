@@ -19,7 +19,10 @@ spec:
         - containerPort: 3000
         env:
         - name: GF_SECURITY_ADMIN_PASSWORD
-          value: "admin123"  # Change this!
+          valueFrom:
+             secretKeyRef:
+                  name: grafana-admin    #create a generic secret with name grafana-admin and password
+                  key: password
         resources:
           requests:
             memory: "128Mi"
