@@ -15,6 +15,8 @@ from src.data.ingestion import DocumentIngestion
 from src.data.vectorstore import VectorStore
 from src.utils.config import settings
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 #set logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -75,6 +77,8 @@ app = FastAPI(
     version = '0.1',
     lifespan=lifespan
 )
+
+Instrumentator().instrument(app).expose(app)
 
 # CORS middleware
 app.add_middleware(
