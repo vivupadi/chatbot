@@ -86,7 +86,7 @@ Key Features:**
 ## Hosting & Scaling
 Docker Image --> Hetzner Cloud --> Kubernetes(K3s)
 
-K8 Manifests(yaml): 
+K3 Manifests(yaml): 
 - Namespace
 - Secrets
 - Backend:
@@ -97,9 +97,17 @@ K8 Manifests(yaml):
   - Frontend-depl
   - Frontend-svc (type NodePort)
  
+- Monitoring
+  - Grafana-depl
+  - Grafana-svc
+  - Prometheus-depl
+  - Prometheus-svc
+  - Prometheus-configmap
+ 
 ## Monitoring 
 
-Prometheues & Grafana
+Prometheues - For metrics and monitoring
+Grafana - For Dashboard & Visualization
 
 ## Next Steps
 ### Evaluation
@@ -109,6 +117,8 @@ DeepEval(Next steps)
 ### Cache using redis
 
 ### Hybrid approach
+
+A third microservice to setup and handle OFFLINE API moments! 
 
 N.B: Observed dependency issue with Ollama and ChromaDB. Currently I have commented out Ollama.
 
