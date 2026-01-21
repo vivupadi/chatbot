@@ -100,6 +100,43 @@ class VectorStore:
         
         logger.info("✅ Documents added to vector store")
 
+    def upload_chromadb_to_blob(self, local_chroma_path, CONNECT_STR, CONTAINER_NAME):
+        """Upload entire ChromaDB folder to blob"""
+        print("Uploading ChromaDB to blob...")
+        blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
+        container = blob_service.get_container_client(CONTAINER_NAME)
+        
+        # Upload all ChromaDB files
+        for file in Path(local_chroma_path).rglob("*"):
+            if file.is_file():
+                blob_name = f"chromadb/{file.relative_to(local_chroma_path)}"
+                with open(file, 'rb') as data:
+                    container.get_blob_client(blob_name).upload_blob(data, overwrite=True)
+        
+        print("✓ Uploaded ChromaDB to blob")
+    
+    def download_chromadb_from_blob(self, CONNECT_STR, CONTAINER_NAME):
+        """Download ChromaDB from blob to Hetzner"""
+        print("Downloading ChromaDB from blob to production...")
+        blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
+        container = blob_service.get_container_client(CONTAINER_NAME)
+        
+        # Clear existing ChromaDB
+        if Path(CHROMA_PATH).exists():
+            shutil.rmtree(CHROMA_PATH)
+        Path(CHROMA_PATH).mkdir(parents=True, exist_ok=True)
+        
+        # Download all ChromaDB files
+        for blob in container.list_blobs(name_starts_with="chromadb/"):
+            local_file = Path(CHROMA_PATH) / blob.name.replace("chromadb/", "")
+            local_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(local_file, 'wb') as f:
+                f.write(container.get_blob_client(blob.name).download_blob().readall())
+        
+        print("✓ Downloaded ChromaDB to production")
+
+
 
     def similarity_search(self, query, k=None, filter_metadata=None):      #Search for similar documents
         k = settings.top_k_results
