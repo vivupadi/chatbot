@@ -14,6 +14,21 @@ class DocumentIngestion:
     def __init__(self):
         self.documents = []
 
+    def download_cv_from_blob(self, CONNECT_STR, CONTAINER_NAME):
+        """Download CV PDF from blob"""
+        print("Downloading CV from blob...")
+        blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
+        container = blob_service.get_container_client(CONTAINER_NAME)
+        
+        cv_path = Path(TEMP_DIR) / "cv.pdf"
+        cv_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        #with open(cv_path, 'wb') as f:
+        #    f.write(container.get_blob_client("cv/Vivek_Padayattil_CV.pdf").download_blob().readall())
+        
+        #print("✓ Downloaded CV")
+        return cv_path
+
     
     def load_pdf(self, file_path):  #Extract text from pdf
         try:
@@ -84,13 +99,29 @@ class DocumentIngestion:
             json.dump(self.documents, f, indent=2, ensure_ascii=False)
         logger.info(f"Saved {len(self.documents)} documents to {output_path}")
 
+    def upload_json_to_blob(self, json_path):
+        """Upload entire json folder to blob"""
+        print("Uploading json to blob...")
+        blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
+        container = blob_service.get_container_client(CONTAINER_NAME)
+        
+        # Upload all json files
+        for file in Path(json_path).rglob("*"):
+            if file.is_file():
+                blob_name = f"json/{file.relative_to(json_path)}"
+                with open(file, 'rb') as data:
+                    container.get_blob_client(blob_name).upload_blob(data, overwrite=True)
+        
+        print("✓ Uploaded json to blob")
+
 
 #Usage
 if __name__ == "__main__":
     ingestion = DocumentIngestion()
 
     #Load CV
-    ingestion.load_pdf("D:\\Chat\\data\\raw\\Vivek_Padayattil_CV__Data_Science.pdf")
+    filepath = ingestion.download_cv_path()
+    ingestion.load_pdf(filepath)
 
     #scrape website
     ingestion.scrape_url('https://www.vivekpadayattil.com/')
