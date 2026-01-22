@@ -7,33 +7,31 @@ import json
 #from docx import Document as DocxDocument
 import logging
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+from azure.storage.blob import BlobServiceClient
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+CONNECT_STR = os.getenv("CONNECTION_STRING") 
+CONTAINER_NAME = os.getenv("CONTAINER_NAME")
 
 class DocumentIngestion:
     def __init__(self):
         self.documents = []
-
-    def download_cv_from_blob(self, CONNECT_STR, CONTAINER_NAME):
-        """Download CV PDF from blob"""
-        print("Downloading CV from blob...")
-        blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
-        container = blob_service.get_container_client(CONTAINER_NAME)
-        
-        cv_path = Path(TEMP_DIR) / "cv.pdf"
-        cv_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        #with open(cv_path, 'wb') as f:
-        #    f.write(container.get_blob_client("cv/Vivek_Padayattil_CV.pdf").download_blob().readall())
-        
-        #print("✓ Downloaded CV")
-        return cv_path
+        self.blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
+        self.container = blob_service.get_container_client(CONTAINER_NAME)
 
     
-    def load_pdf(self, file_path):  #Extract text from pdf
+    def load_pdf(self):  #Extract text from pdf
         try:
-            logger.info(f"PDF Loading: {file_path}")
-            reader = PdfReader(file_path)
+            blob_path = "raw/Vivek_Padayattil_CV__MLOps.pdf"
+            logger.info(f"PDF Loading: {blob_path}")
+            reader = PdfReader(self.container.get_blob_client(blob_path).download_blob().readall())
+            #reader = PdfReader(file_path)
 
             documents = []
             for page_num, page in enumerate(reader.pages):
@@ -43,7 +41,7 @@ class DocumentIngestion:
                     documents.append({
                         "content": text,
                         "metadata": {
-                            "source": file_path,
+                            "source": blob_path,
                             "page": page_num + 1,
                             "type": "pdf"
                         }
@@ -120,8 +118,9 @@ if __name__ == "__main__":
     ingestion = DocumentIngestion()
 
     #Load CV
-    filepath = ingestion.download_cv_path()
-    ingestion.load_pdf(filepath)
+    ingestion.load_pdf()
+
+    breakpoint()
 
     #scrape website
     ingestion.scrape_url('https://www.vivekpadayattil.com/')
