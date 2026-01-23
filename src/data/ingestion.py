@@ -1,9 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
+import PyPDF2
 from pypdf import PdfReader
 from pathlib import Path
 from typing import List, Dict
 import json
+import io
 #from docx import Document as DocxDocument
 import logging
 
@@ -23,15 +25,18 @@ class DocumentIngestion:
     def __init__(self):
         self.documents = []
         self.blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
-        self.container = blob_service.get_container_client(CONTAINER_NAME)
+        self.container = self.blob_service.get_container_client(CONTAINER_NAME)
 
     
     def load_pdf(self):  #Extract text from pdf
         try:
-            blob_path = "raw/Vivek_Padayattil_CV__MLOps.pdf"
+            blob_path = "raw/Vivek_Padayattil_CV__MLops.pdf"
             logger.info(f"PDF Loading: {blob_path}")
-            reader = PdfReader(self.container.get_blob_client(blob_path).download_blob().readall())
-            #reader = PdfReader(file_path)
+            pdf_bytes = self.container.get_blob_client(blob_path).download_blob().readall()   #gets pdf file bytes format
+            
+            pdf_file = io.BytesIO(pdf_bytes)
+    
+            reader = PyPDF2.PdfReader(pdf_file)
 
             documents = []
             for page_num, page in enumerate(reader.pages):
@@ -49,6 +54,7 @@ class DocumentIngestion:
             
             logger.info(f"Loaded pdf file and extracted {len(documents)} pages from PDF")
             self.documents.extend(documents)
+            print(documents)
             return documents
         except Exception as e:
             logger.error(f" Error Loading pdf: {e}")
@@ -97,18 +103,16 @@ class DocumentIngestion:
             json.dump(self.documents, f, indent=2, ensure_ascii=False)
         logger.info(f"Saved {len(self.documents)} documents to {output_path}")
 
-    def upload_json_to_blob(self, json_path):
+    def upload_json_to_blob(self):
         """Upload entire json folder to blob"""
         print("Uploading json to blob...")
-        blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
-        container = blob_service.get_container_client(CONTAINER_NAME)
         
         # Upload all json files
-        for file in Path(json_path).rglob("*"):
-            if file.is_file():
-                blob_name = f"json/{file.relative_to(json_path)}"
-                with open(file, 'rb') as data:
-                    container.get_blob_client(blob_name).upload_blob(data, overwrite=True)
+        json_str = json.dumps(self.documents, indent=2, ensure_ascii=False)
+
+        blob_name = "json/documents.json"
+        
+        self.container.get_blob_client(blob_name).upload_blob(json_str, overwrite=True)
         
         print("✓ Uploaded json to blob")
 
@@ -120,11 +124,13 @@ if __name__ == "__main__":
     #Load CV
     ingestion.load_pdf()
 
-    breakpoint()
 
     #scrape website
     ingestion.scrape_url('https://www.vivekpadayattil.com/')
 
 
+    ingestion.upload_json_to_blob()    # save json to azure blob storage
+
+
     #save documents
-    ingestion.save_documents("D:\\Chat\\data\\processed\\documents.json")
+    ingestion.save_documents("D:\\Chat\\data\\processed\\documents.json")   #save json loaclly 

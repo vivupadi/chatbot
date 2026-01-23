@@ -15,6 +15,7 @@ pypdf==4.1.0
 beautifulsoup4==4.12.3
 requests==2.31.0
 python-docx==1.1.0
+PyPDF2==3.0.1
 
 # API & Serving
 fastapi==0.110.0
@@ -33,3 +34,6 @@ ruff==0.3.0
 
 #monitoring
 prometheus-fastapi-instrumentator==6.1.0
+
+#azure blob
+azure-storage-blob

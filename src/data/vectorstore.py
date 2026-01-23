@@ -9,6 +9,12 @@ import logging
 from pathlib import Path
 from src.utils.config import settings
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+from azure.storage.blob import BlobServiceClient
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -37,6 +43,14 @@ class VectorStore:
         )
 
         logger.info("Vector store initialized")
+
+        CONNECT_STR = os.getenv("CONNECTION_STRING")
+        CONTAINER_NAME = os.getenv("CONTAINER_NAME")
+
+        self.blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
+        self.container = self.blob_service.get_container_client(CONTAINER_NAME)
+
+        logger.info("Azure Blob initialized")
 
     def chunk_documents(self,documents: List[Dict]):
         chunk_size = settings.chunk_size
@@ -100,20 +114,19 @@ class VectorStore:
         
         logger.info("✅ Documents added to vector store")
 
-    def upload_chromadb_to_blob(self, local_chroma_path, CONNECT_STR, CONTAINER_NAME):
-        """Upload entire ChromaDB folder to blob"""
-        print("Uploading ChromaDB to blob...")
-        blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
-        container = blob_service.get_container_client(CONTAINER_NAME)
+    def upload_json_to_blob(self):
+        """Upload entire json folder to blob"""
+        print("Uploading json to blob...")
         
-        # Upload all ChromaDB files
-        for file in Path(local_chroma_path).rglob("*"):
-            if file.is_file():
-                blob_name = f"chromadb/{file.relative_to(local_chroma_path)}"
-                with open(file, 'rb') as data:
-                    container.get_blob_client(blob_name).upload_blob(data, overwrite=True)
+        # Upload all json files
+        json_str = json.dumps(self.documents, indent=2, ensure_ascii=False)
+
+        blob_name = "json/documents.json"
         
-        print("✓ Uploaded ChromaDB to blob")
+        self.container.get_blob_client(blob_name).upload_blob(json_str, overwrite=True)
+        
+        print("✓ Uploaded json to blob")
+
     
     def download_chromadb_from_blob(self, CONNECT_STR, CONTAINER_NAME):
         """Download ChromaDB from blob to Hetzner"""
