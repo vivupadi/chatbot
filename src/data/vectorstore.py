@@ -15,6 +15,8 @@ load_dotenv()
 
 from azure.storage.blob import BlobServiceClient
 
+from datetime import datetime
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -29,12 +31,22 @@ class VectorStore:
         )
 
         logger.info("🔧 Initializing ChromaDB...")
-        # Initialize ChromaDB client
-        self.client = chromadb.PersistentClient(
-        path=str(settings.data_vector_dir),
-        settings=ChromaSettings(anonymized_telemetry=False)  # Disables telemetry
-        )
 
+        running_mode = 'local'   #Or local   Set running mode here to create a vector database on hetzner cloud or locally
+        self.chroma_path= "/data/chroma"
+
+        if running_mode == 'local':
+            # Initialize ChromaDB client
+            self.client = chromadb.PersistentClient(
+            path=str(settings.data_vector_dir),
+            settings=ChromaSettings(anonymized_telemetry=False)  # Disables telemetry
+            )
+        elif running_mode == 'cloud':
+            self.client = chromadb.PersistentClient(
+            path=self.chroma_path,
+            settings=ChromaSettings(anonymized_telemetry=False)
+        )
+        
         # Initialize vector store
         self.vector_store = Chroma(
             client=self.client,
@@ -114,41 +126,56 @@ class VectorStore:
         
         logger.info("✅ Documents added to vector store")
 
-    def upload_json_to_blob(self):
-        """Upload entire json folder to blob"""
-        print("Uploading json to blob...")
-        
-        # Upload all json files
-        json_str = json.dumps(self.documents, indent=2, ensure_ascii=False)
-
-        blob_name = "json/documents.json"
-        
-        self.container.get_blob_client(blob_name).upload_blob(json_str, overwrite=True)
-        
-        print("✓ Uploaded json to blob")
-
-    
-    def download_chromadb_from_blob(self, CONNECT_STR, CONTAINER_NAME):
-        """Download ChromaDB from blob to Hetzner"""
-        print("Downloading ChromaDB from blob to production...")
-        blob_service = BlobServiceClient.from_connection_string(CONNECT_STR)
-        container = blob_service.get_container_client(CONTAINER_NAME)
-        
-        # Clear existing ChromaDB
-        if Path(CHROMA_PATH).exists():
-            shutil.rmtree(CHROMA_PATH)
-        Path(CHROMA_PATH).mkdir(parents=True, exist_ok=True)
-        
-        # Download all ChromaDB files
-        for blob in container.list_blobs(name_starts_with="chromadb/"):
-            local_file = Path(CHROMA_PATH) / blob.name.replace("chromadb/", "")
-            local_file.parent.mkdir(parents=True, exist_ok=True)
+    def load_json(self):  #Extract text from pdf
+        try:
+            blob_path = "json/documents.json"
+            logger.info(f"PDF Loading: {blob_path}")
+            json_bytes = self.container.get_blob_client(blob_path).download_blob().readall()   #gets pdf file bytes format
             
-            with open(local_file, 'wb') as f:
-                f.write(container.get_blob_client(blob.name).download_blob().readall())
-        
-        print("✓ Downloaded ChromaDB to production")
+            json_string = json_bytes.decode('utf-8')
+    
+            document = json.loads(json_string)
+            return document
 
+        except Exception as e:
+            logger.error(f" Error Loading pdf: {e}")
+            return []
+
+    def upload_chroma_to_blob(self):
+        """Upload chromadb to blob"""
+        print("Uploading chromadb to blob...")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        uploaded_count = 0
+        
+        # Upload all ChromaDB files from the directory
+        for file_path in Path(self.chroma_path).rglob("*"):
+            if file_path.is_file():
+                relative_path = file_path.relative_to(self.chroma_path)
+                
+                print('######')
+                # Create blob names
+                versioned_blob = f"vectorstore/versions/{timestamp}/{relative_path}"
+                latest_blob = f"vectorstore/latest/{relative_path}"
+                
+                # Read file and upload
+                with open(file_path, 'rb') as f:
+                    file_bytes = f.read()
+
+                # Upload versioned backup
+                self.container.get_blob_client(versioned_blob).upload_blob(
+                    file_bytes, 
+                    overwrite=True
+                )
+                
+                # Upload to latest
+                self.container.get_blob_client(latest_blob).upload_blob(
+                    file_bytes,
+                    overwrite=True
+                )
+                
+                uploaded_count += 1
+        
+        print("✓ Uploaded chroma to blob")
 
 
     def similarity_search(self, query, k=None, filter_metadata=None):      #Search for similar documents
@@ -192,13 +219,16 @@ if __name__ == "__main__":
     
     # Initialize vector store
     vs_manager = VectorStore()
-    
-    # Load documents
-    with open("./data/processed/documents.json", 'r', encoding='utf-8') as f:
-        documents = json.load(f)
+
+    documents = vs_manager.load_json()
     
     # Add to vector store
     vs_manager.add_documents(documents)
+
+    #Upload the chromadb to blob storage for version cotrol
+    vs_manager.upload_chroma_to_blob()
+
+    #breakpoint()
     
     # Test search
     results = vs_manager.similarity_search("What is my Python experience?")
