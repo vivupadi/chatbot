@@ -1,0 +1,52 @@
+# rag-cronjob.yaml
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: rag-db-pipeline
+  namespace: rag-dev
+spec:
+  schedule: "0 2 2 * *"  # Every Sunday 2 AM
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: db-pipeline
+            image: vivupadi/db-image:latest  # ← Your image
+            imagePullPolicy: Always  # Always pull latest version
+            
+            env:
+            - name: CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: rag-secrets
+                  key: CONNECTION_STRING
+            - name: CONTAINER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: rag-secrets
+                  key: CONTAINER_NAME
+            
+            volumeMounts:
+            - name: chroma-data
+              mountPath: /app/data/vector_db
+            
+            resources:
+              requests:
+                memory: "1Gi"
+                cpu: "1"
+              limits:
+                memory: "2Gi"
+                cpu: "2"
+
+          # For writing the chromadb
+          volumes:
+          - name: chroma-data
+            hostPath:
+              path: /data/chroma  # ← Same as backend
+              type: DirectoryOrCreate
+          
+          restartPolicy: OnFailure
