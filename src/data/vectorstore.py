@@ -7,7 +7,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List, Dict, Optional
 import logging
 from pathlib import Path
-from src.utils.config import settings
+from config import settings    # While running locally set config to src.utils.config
 
 import os
 from dotenv import load_dotenv
@@ -32,7 +32,7 @@ class VectorStore:
 
         logger.info("🔧 Initializing ChromaDB...")
 
-        running_mode = 'local'   #Or local   Set running mode here to create a vector database on hetzner cloud or locally
+        running_mode = 'cloud'   #Or local   Set running mode here to create a vector database on hetzner cloud or locally
         self.chroma_path= "/data/chroma"
 
         if running_mode == 'local':
@@ -152,7 +152,6 @@ class VectorStore:
             if file_path.is_file():
                 relative_path = file_path.relative_to(self.chroma_path)
                 
-                print('######')
                 # Create blob names
                 versioned_blob = f"vectorstore/versions/{timestamp}/{relative_path}"
                 latest_blob = f"vectorstore/latest/{relative_path}"

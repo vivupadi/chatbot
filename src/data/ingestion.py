@@ -54,7 +54,6 @@ class DocumentIngestion:
             
             logger.info(f"Loaded pdf file and extracted {len(documents)} pages from PDF")
             self.documents.extend(documents)
-            print(documents)
             return documents
         except Exception as e:
             logger.error(f" Error Loading pdf: {e}")
