@@ -1,0 +1,61 @@
+# Deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: rag-dev          # matches your existing namespace
+  labels:
+    app: ollama
+spec:
+  replicas: 1                 # never increase on 4GB RAM
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        ports:
+        - containerPort: 11434
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0:11434"
+        - name: OLLAMA_KEEP_ALIVE
+          value: "5m"         # unloads model after 5min idle — critical for 4GB RAM
+        - name: OLLAMA_MAX_LOADED_MODELS
+          value: "1"          # only one model in memory at a time
+        - name: OLLAMA_NUM_PARALLEL
+          value: "1"          # only one inference at a time — saves RAM
+        volumeMounts:
+        - name: ollama-data
+          mountPath: /root/.ollama
+        resources:
+          requests:
+            memory: "1Gi"     # conservative — lets K8s schedule it
+            cpu: "500m"
+          limits:
+            memory: "2Gi"     # hard cap — protects your other pods
+            cpu: "1500m"      # can burst but won't starve backend
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 11434
+          initialDelaySeconds: 60   # ollama needs time to start
+          periodSeconds: 15
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 11434
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+      volumes:
+      - name: ollama-data
+        persistentVolumeClaim:
+          claimName: ollama-pvc
