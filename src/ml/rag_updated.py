@@ -16,6 +16,8 @@ load_dotenv()
 from src.data.vectorstore import VectorStore
 from src.utils.config import settings
 from src.ml.llm_model import HuggingFaceInferenceLLM
+from src.ml.ollama import OllamaLLM
+from src.ml.hybrid_llm import HybridLLM
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,33 +34,20 @@ class RAGengine:
             self.vector_store = VectorStore()
 
         # Initialize LLM
-        self._init_llm()
+        self._init_featherless_llm()  #init featherless api
+        self._init_ollama()           #init ollama api
+        self._init_hybrid_llm()       #init hybrid llm with the above two models and the strategy defined in config
 
         # Setup RAG chain
         self._setup_chain()
 
         logger.info("RAG Engine Initialized")
     
-    def _init_llm(self):
-        if settings.use_ollama:
-            try:
+    def _init_ollama(self):
+        self.ollama_llm = OllamaLLM()
+        logger.info(f"✅ Ollama initialized")
 
-                print("✅ Using Ollama")
-                self.llm = Ollama(
-                    base_url=settings.ollama_base_url,
-                    model=settings.ollama_model,
-                    temperature=0.7
-                )
-                logger.info(f"Using Ollama: {settings.ollama_model}")
-
-            except Exception as e:
-                logger.warning(f"Ollama not available: {e}")
-                logger.info("Falling back to HuggingFace...")
-                self._init_huggingface_llm()
-        else:
-            self._init_huggingface_llm()
-
-    def _init_huggingface_llm(self):
+    def _init_featherless_llm(self):
         # Get Featherless API key (NOT HuggingFace token)
 
         api_key = settings.Featherless_ai_key_new or os.getenv("Featherless_ai_key_new")
@@ -71,15 +60,21 @@ class RAGengine:
         
         model = getattr(settings, 'huggingface_model', 'mistralai/Mistral-7B-Instruct-v0.2')
         
-        self.llm = HuggingFaceInferenceLLM(api_key=api_key, model=model)
+        self.featherless_llm = HuggingFaceInferenceLLM(api_key=api_key, model=model)
         logger.info(f"✅ LLM initialized")
+
+    def _init_hybrid_llm(self):
+        
+        self.strategy = settings.LLM_STRATEGY
+        self.llm = HybridLLM(self.featherless_llm, self.ollama_llm, self.strategy)
+        logger.info(f"✅ Hybrid LLM initialized with strategy: {self.strategy}")
 
     def _format_docs(self, docs):
         """Format retrieved documents for context"""
         return "\n\n".join([doc.page_content for doc in docs])
 
     def _setup_chain(self):
-        template = """You are a helpful AI assistant. Use the following context to answer the question.
+        template = """You are a helpful AI assistant. Use the following context to answer the questions about Vivek.
         If you don't know the answer, just say you don't know. Don't make up information.
 
         Context:
@@ -173,12 +168,12 @@ class RAGengine:
 if __name__ == "__main__":
     # Initialize RAG engine
     rag = RAGengine()
-    
+    featherless_llm = rag._init_featherless_llm()
+    ollama_llm = rag._init_ollama()
 
-    llm = RAGengine()
-    sucess = llm._init_huggingface_llm
+    llm = rag._init_hybrid_llm()   
 
-    #print(f"model successfully initiaized:{sucess}++++++")
+    print(f"model successfully initiaized:{llm}++++++")
     #breakpoint()
     # Test queries
     test_questions = [

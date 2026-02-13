@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     #Project name
     project_name: str = "RAG Chatbot"
     environment: Literal["development", "staging", "production"] = "development"
+    running_mode: Literal["local", "cloud"] = "cloud"
 
     #Paths
     base_dir: Path = Path(__file__).parent.parent.parent
@@ -29,9 +30,9 @@ class Settings(BaseSettings):
 
 
     #LLM config
-    use_ollama:bool = False
-    ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3.2"
+    LLM_STRATEGY: Literal["hybrid", "featherless-only", "ollama-only"] = "hybrid"
+    OLLAMA_BASE_URL: str = "http://ollama-service:11434"
+    OLLAMA_MODEL: str = "phi"
 
     #HugginFace
     #huggingface_token: str = 'HuggingFace_Token'

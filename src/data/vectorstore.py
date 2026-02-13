@@ -8,6 +8,7 @@ from typing import List, Dict, Optional
 import logging
 from pathlib import Path
 from config import settings    # While running locally set config to src.utils.config
+#from src.utils.config import settings
 
 import os
 from dotenv import load_dotenv
@@ -32,7 +33,7 @@ class VectorStore:
 
         logger.info("🔧 Initializing ChromaDB...")
 
-        running_mode = 'cloud'   #Or local   Set running mode here to create a vector database on hetzner cloud or locally
+        running_mode = settings.running_mode   #Or local   Set running mode here to create a vector database on hetzner cloud or locally
         self.chroma_path= "/data/chroma"
 
         if running_mode == 'local':

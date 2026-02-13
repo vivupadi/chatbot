@@ -1,6 +1,6 @@
 # Dockerfile cronjob and automatic chromadb update
 
-FROM python:3.1-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 

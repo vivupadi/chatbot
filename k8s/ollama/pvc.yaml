@@ -8,5 +8,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 3Gi            # reduced from 5Gi — you only have 7.8GB free
+      storage: 4Gi            # reduced from 5Gi — you only have 7.8GB free
                               # phi model = 1.6GB, leaves 1.4GB buffer

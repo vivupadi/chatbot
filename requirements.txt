@@ -9,6 +9,7 @@ chromadb==1.2.1
 
 # LLM Integration
 #ollama==0.1.7
+httpx>=0.24.0
 
 # Document Processing
 pypdf==4.1.0
