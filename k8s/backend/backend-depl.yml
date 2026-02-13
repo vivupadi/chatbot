@@ -34,35 +34,11 @@ spec:
           containerPort: 8000
           protocol: TCP
         
-        env:
-        # ConfigMap values
-        - name: CHROMA_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: rag-config
-              key: CHROMA_HOST
-        - name: CHROMA_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: rag-config
-              key: CHROMA_PORT
-        - name: LOG_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              name: rag-config
-              key: LOG_LEVEL
-        - name: ENVIRONMENT
-          valueFrom:
-            configMapKeyRef:
-              name: rag-config
-              key: ENVIRONMENT
-        
-        # Secret values
-        - name: Featherless_ai_key_new
-          valueFrom:
-            secretKeyRef:
-              name: rag-secrets
-              key: Featherless_ai_key_new
+        envFrom:
+        - configMapRef:
+            name: rag-config
+        - secretRef:
+            name: rag-secrets
         
 
         # THE IMPORTANT PART - Mount the permanent folder

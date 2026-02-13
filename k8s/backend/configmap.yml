@@ -4,21 +4,25 @@ metadata:
   name: rag-config
   namespace: rag-dev
 data:
-  # Ollama Configuration
-  #OLLAMA_BASE_URL: "http://ollama-service:11434"
-  #OLLAMA_MODEL: "llama3.2"
-  #USE_OLLAMA: "true"
-  
-  # ChromaDB Configuration
-  CHROMA_HOST: "chromadb-service"
-  CHROMA_PORT: "8000"
-  
-  # Redis Configuration
-  #REDIS_HOST: "redis-service"
-  #REDIS_PORT: "6379"
-  
-  # Application Configuration
-  LOG_LEVEL: "INFO"
+  # Application
   ENVIRONMENT: "production"
-  #PRIMARY_LLM: "huggingface"
+  RUNNING_MODE: "cloud"
+  LOG_LEVEL: "INFO"
+
+  # LLM Strategy
+  LLM_STRATEGY: "hybrid"
+  HUGGINGFACE_MODEL: "mistralai/Mistral-7B-Instruct-v0.2"
+
+  # Ollama
+  OLLAMA_BASE_URL: "http://ollama-service:11434"
+  OLLAMA_MODEL: "phi"
+
+  # Embedding
+  EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
+  EMBEDDING_DEVICE: "cpu"
+
+  # Chunking
+  CHUNK_SIZE: "512"
+  CHUNK_OVERLAP: "50"
+  TOP_K_RESULTS: "3"
   
