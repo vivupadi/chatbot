@@ -3,9 +3,9 @@ An Enterprise-grade chatbot to fetch answers about Vivek's Professional Life. Ho
 
 The Chatbot uses hybrid approach to answer query:
 
-Main LLM model: Through Featherless API using Mistral 7b model
+- Main LLM model: Through Featherless API using Mistral 7b model
 
-Fallback model(in case featherless API fails): Ollama hosted 'tinyllama' model.
+- Fallback model(in case featherless API fails): Ollama hosted 'tinyllama' model.
 
 [Live DEMO of the chatbot](http://188.245.71.76:30080/) 
 (**Click on send button in the terminal)
