@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     #LLM config
     LLM_STRATEGY: Literal["hybrid", "featherless-only", "ollama-only"] = "hybrid"
     OLLAMA_BASE_URL: str = "http://ollama-service:11434"
-    OLLAMA_MODEL: str = "phi"
+    OLLAMA_MODEL: str = "tinyllama"
 
     #HugginFace
     #huggingface_token: str = 'HuggingFace_Token'

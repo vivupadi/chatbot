@@ -6,8 +6,8 @@ logger = logging.getLogger(__name__)
 class OllamaLLM:
     """Ollama provider matching HuggingFaceInferenceLLM interface"""
     
-    def __init__(self, base_url: str = "http://ollama-service:11434", 
-                 model: str = "phi", max_tokens: int = 512, 
+    def __init__(self, base_url: str = "http://ollama-service:11434",
+                 model: str = "tinyllama", max_tokens: int = 512,
                  temperature: float = 0.7):
         self.base_url = base_url
         self.model = model

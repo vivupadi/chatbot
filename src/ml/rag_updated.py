@@ -44,8 +44,11 @@ class RAGengine:
         logger.info("RAG Engine Initialized")
     
     def _init_ollama(self):
-        self.ollama_llm = OllamaLLM()
-        logger.info(f"✅ Ollama initialized")
+        self.ollama_llm = OllamaLLM(
+            base_url=settings.OLLAMA_BASE_URL,
+            model=settings.OLLAMA_MODEL
+        )
+        logger.info(f"✅ Ollama initialized: {settings.OLLAMA_MODEL}")
 
     def _init_featherless_llm(self):
         # Get Featherless API key (NOT HuggingFace token)
