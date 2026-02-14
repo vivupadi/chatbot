@@ -12,7 +12,7 @@ from config import settings    # While running locally set config to src.utils.c
 
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=False)
 
 from azure.storage.blob import BlobServiceClient
 

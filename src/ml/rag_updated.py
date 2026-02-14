@@ -11,7 +11,7 @@ from langchain_community.llms import Ollama
 
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=False)
 
 from src.data.vectorstore import VectorStore
 from src.utils.config import settings
