@@ -7,6 +7,11 @@ The Chatbot uses hybrid approach to answer query:
 
 - Fallback model(in case featherless API fails): Ollama hosted 'tinyllama' model.
 
+Configmap can be edited to select the architecture for the backend LLM model:
+1. Hybrid Approach (Featherless API as main, Ollama 'tinyllama' model as fallback)
+2. Featherless only (Only Featherless)
+3. Ollama only (Only Ollama : for secure approach) 
+
 [Live DEMO of the chatbot](http://188.245.71.76:30080/) 
 (**Click on send button in the terminal)
 
