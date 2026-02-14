@@ -7,8 +7,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List, Dict, Optional
 import logging
 from pathlib import Path
-from config import settings    # While running locally set config to src.utils.config
-#from src.utils.config import settings
+from src.utils.config import settings
 
 import os
 from dotenv import load_dotenv
