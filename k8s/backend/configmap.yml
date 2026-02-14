@@ -15,7 +15,7 @@ data:
 
   # Ollama
   OLLAMA_BASE_URL: "http://ollama-service:11434"
-  OLLAMA_MODEL: "phi"
+  OLLAMA_MODEL: "tinyllama"
 
   # Embedding
   EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"

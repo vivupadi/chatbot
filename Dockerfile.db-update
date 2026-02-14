@@ -17,10 +17,12 @@ RUN pip install --no-cache-dir \
     requests \
     lxml
 
-# Copy your scripts
-COPY src/data/ingestion.py .
-COPY src/data/vectorstore.py .
-COPY src/utils/config.py .
+# Copy only required files, preserving src/ package structure
+RUN mkdir -p src/data src/utils && \
+    touch src/__init__.py src/data/__init__.py src/utils/__init__.py
+COPY src/data/ingestion.py src/data/
+COPY src/data/vectorstore.py src/data/
+COPY src/utils/config.py src/utils/
 
-# Default command runs both scripts
-CMD ["bash", "-c", "python3 ingestion.py && python3 vectorstore.py"]
+# Default command runs both scripts as modules
+CMD ["bash", "-c", "python3 -m src.data.ingestion && python3 -m src.data.vectorstore"]

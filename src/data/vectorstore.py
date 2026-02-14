@@ -9,6 +9,7 @@ import logging
 from pathlib import Path
 from src.utils.config import settings
 
+import json
 import os
 from dotenv import load_dotenv
 load_dotenv(override=False)
@@ -33,7 +34,7 @@ class VectorStore:
         logger.info("🔧 Initializing ChromaDB...")
 
         running_mode = settings.running_mode   #Or local   Set running mode here to create a vector database on hetzner cloud or locally
-        self.chroma_path= "/data/chroma"
+        self.chroma_path= "/app/data/vector_db"
 
         if running_mode == 'local':
             # Initialize ChromaDB client

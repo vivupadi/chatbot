@@ -39,6 +39,9 @@ spec:
             name: rag-config
         - secretRef:
             name: rag-secrets
+
+        securityContext:
+            runAsUser: 1000
         
 
         # THE IMPORTANT PART - Mount the permanent folder

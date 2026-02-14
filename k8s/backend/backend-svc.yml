@@ -4,7 +4,7 @@ metadata:
   name: backend-svc
   namespace: rag-dev
   labels:
-    app: backend
+    app: rag-backend
 spec:
   type: ClusterIP  # Internal only
   selector:
