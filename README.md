@@ -123,15 +123,11 @@ Grafana - For Dashboard & Visualization
 ## Next Steps
 ### Evaluation
 
+Current approach uses Manual evaluations. Set of expected answers are compared with generated responses.
 DeepEval(Next steps) 
 
-### Cache using redis
+### Cache using redis 
 
-### Hybrid approach
-
-A third microservice to setup and handle OFFLINE API moments! 
-
-N.B: Observed dependency issue with Ollama and ChromaDB. Currently I have commented out Ollama.
 
 ## LICENSES
 
