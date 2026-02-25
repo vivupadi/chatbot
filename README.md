@@ -123,8 +123,13 @@ Grafana - For Dashboard & Visualization
 ## Next Steps
 ### Evaluation
 
-Current approach uses Manual evaluations. Set of expected answers are compared with generated responses.
-DeepEval(Next steps) 
+Current approach uses Golden Set Manual evaluations. Set of expected answers are compared with generated responses.
+Next Plan:
+RAGAS. Four core metrics:
+Faithfulness — does the answer stick to the retrieved context, or is the LLM hallucinating? Score 0–1. Most important metric. If your answer says something not present in the retrieved chunks, faithfulness is low.
+Answer Relevancy — does the answer actually address the question asked? A faithful but off-topic answer scores low here.
+Context Precision — of the chunks you retrieved, how many were actually relevant? If you retrieve 5 chunks but only 1 was useful, precision is low. This tells you your retriever is noisy.
+Context Recall — did you retrieve all the chunks needed to answer the question? If the answer requires information from 3 chunks but you only retrieved 1, recall is low.
 
 ### Cache using redis 
 
