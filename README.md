@@ -139,6 +139,8 @@ Context Recall — did you retrieve all the chunks needed to answer the question
 This project is licensed under the MIT License - see the [License](LICENSE) file for details.
 
 
-
 <div align="center">
 ⭐ Star this repo if you find it helpful!
+  
+Made with ❤️ by Vivek Padayattil
+</div>
