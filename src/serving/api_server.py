@@ -18,12 +18,18 @@ from src.utils.config import settings
 from prometheus_fastapi_instrumentator import Instrumentator
 from prometheus_client import Gauge
 from prometheus_client import Histogram  # ← Import for custom metrics
-import time
 
 # Custom metric for initialization
 initialization_duration = Gauge(
     'rag_initialization_duration_seconds',
     'Time taken to initialize RAG components'
+)
+
+#For custom Prometheus metrics
+llm_latency = Histogram(
+    'llm_inference_seconds',
+    'Time for LLM inference',
+    buckets=[0.5, 1.0, 2.0, 5.0, 10.0]
 )
 
 #set logging
@@ -94,13 +100,6 @@ app = FastAPI(
 
 Instrumentator().instrument(app).expose(app)   #Prometheus metric initialized
 
-#For custom Prometheus metrics
-llm_latency = Histogram(
-    'llm_inference_seconds',
-    'Time for LLM inference',
-    buckets=[0.5, 1.0, 2.0, 5.0, 10.0]
-)
-
 
 # CORS middleware
 app.add_middleware(
@@ -115,7 +114,7 @@ app.add_middleware(
 @app.post("/query", response_model = QueryResponse)
 async def query_endpoint(request: QueryRequest):
     try:
-        logger.info(f"Receeived query: {request.question}")
+        logger.info(f"Received query: {request.question}")
         
         # Measure LLM time
         start = time.time()

@@ -15,3 +15,5 @@ src/ml/__pycache__
 src/utils/__pycache__
 src/data/__pycache__
 .pytest_cache
+
+k8s/secrets.yml

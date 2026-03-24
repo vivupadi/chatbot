@@ -7,11 +7,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List, Dict, Optional
 import logging
 from pathlib import Path
-from config import settings    # While running locally set config to src.utils.config
+from src.utils.config import settings
 
+import json
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=False)
 
 from azure.storage.blob import BlobServiceClient
 
@@ -32,8 +33,8 @@ class VectorStore:
 
         logger.info("🔧 Initializing ChromaDB...")
 
-        running_mode = 'cloud'   #Or local   Set running mode here to create a vector database on hetzner cloud or locally
-        self.chroma_path= "/data/chroma"
+        running_mode = settings.running_mode   #Or local   Set running mode here to create a vector database on hetzner cloud or locally
+        self.chroma_path= "/app/data/vector_db"
 
         if running_mode == 'local':
             # Initialize ChromaDB client
