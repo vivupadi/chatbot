@@ -31,25 +31,35 @@
             questionInput.value = '';
 
             //TAlking to the API
-            const response = await fetch(`${API_URL}/query`, {
-                method: 'POST',  // We're sending data (POST request)
-                headers: {
-                    'Content-Type': 'application/json'  // We're sending JSON
-                },
-                body: JSON.stringify({
-                    question: question,  // The user's question
-                    top_k: 4           // Get 4 documents
-                })
-            });
+            document.getElementById('chat').innerHTML += `<p><em>Thinking...</em></p>`;
 
-            const data = await response.json();
+            let data;
+            try {
+                const response = await fetch(`${API_URL}/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        top_k: 4
+                    })
+                });
+                data = await response.json();
+            } catch (err) {
+                document.getElementById('chat').innerHTML += `<p><strong>Error:</strong> ${err.message}</p>`;
+                return;
+            }
+
+            // Remove "Thinking..." and show answer
+            const chat = document.getElementById('chat');
+            const thinking = chat.querySelector('em');
+            if (thinking) thinking.parentElement.remove();
 
             // Show AI's answer in chat
-            document.getElementById('chat').innerHTML += 
-                `<p><strong>Chatbot:</strong> ${data.answer}</p>`;
-            
+            chat.innerHTML += `<p><strong>Chatbot:</strong> ${data.answer}</p>`;
+
             // Scroll to bottom
-            const chat = document.getElementById('chat');
             chat.scrollTop = chat.scrollHeight;
         }
     </script>
