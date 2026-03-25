@@ -40,6 +40,12 @@ jobs:
             echo "#### Pulling latest code ######"
             git pull origin main
             
+            # Pre-build cleanup (start fresh)
+            echo "🧹 Pre-build cleanup..."
+            docker builder prune -af
+            docker image prune -af
+            df -h / | grep -v tmp
+
             # Login to Docker Hub
             echo "🔐 Logging into Docker Hub..."
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
@@ -47,14 +53,25 @@ jobs:
             # Build backend image
             echo "🏗️ Building backend image..."
             docker build -f Dockerfile.backend -t vivupadi/rag-backend:latest .
+
+            # Clean up immediately after build to free space
+            docker builder prune -f
+            docker image prune -f
             
             # Build frontend image
             echo "🏗️ Building frontend image..."
             docker build -f Dockerfile.frontend -t vivupadi/rag-frontend:latest .
+
+            # Clean up after frontend
+            docker builder prune -f
+
             
             # Build db-update image (optional)
             echo "🏗️ Building db-update image..."
             docker build -f Dockerfile.db-update -t vivupadi/rag-db-update:latest .
+
+            # Clean up after db-update
+            docker builder prune -f
             
             # Push images to Docker Hub
             echo "📤 Pushing images to Docker Hub..."
