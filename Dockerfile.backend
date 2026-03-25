@@ -19,6 +19,9 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir --prefix=/opt/venv -r requirements.txt
 
+# Pre-download sentence-transformers model (prevents runtime download & OOM)
+RUN PYTHONPATH=/opt/venv/lib/python3.11/site-packages python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
+
 # Verify /opt/venv was created
 RUN ls -la /opt/venv
 
