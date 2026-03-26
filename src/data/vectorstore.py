@@ -3,7 +3,7 @@ from chromadb.config import Settings as ChromaSettings
 
 from langchain_community.vectorstores import Chroma
 #from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List, Dict, Optional
@@ -34,9 +34,9 @@ class VectorStore:
         )"""
 
         # Use HuggingFace API for embeddings (saves 300MB RAM!)
-        self.embeddings = HuggingFaceInferenceAPIEmbeddings(
-            api_key=settings.HuggingFace_Token,
-            model_name="sentence-transformers/all-MiniLM-L6-v2"  # Same model!
+        self.embeddings = HuggingFaceEndpointEmbeddings(
+            model="sentence-transformers/all-MiniLM-L6-v2",  # Same model!
+            huggingfacehub_api_token=settings.HuggingFace_Token
         )
 
         logger.info("🔧 Initializing ChromaDB...")

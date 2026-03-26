@@ -36,8 +36,10 @@ jobs:
             # Navigate to your project directory
             cd /root/chatbot
             
-            # Pull latest code from GitHub
-            echo "#### Pulling latest code ######"
+            # Ensure main branch and Pull latest code from GitHub
+            echo "#### Switching to main and Pulling latest code ######"
+            git fetch origin
+            git checkout main
             git pull origin main
             
             # Pre-build cleanup (start fresh)
