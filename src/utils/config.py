@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = "tinyllama"
 
     #HugginFace
-    #huggingface_token: str = 'HuggingFace_Token'
+    HuggingFace_Token: str = ''
     Featherless_ai_key_new: str = ''
     huggingface_model: str = "mistralai/Mistral-7B-Instruct-v0.2"
 

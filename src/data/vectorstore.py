@@ -2,7 +2,9 @@ import chromadb
 from chromadb.config import Settings as ChromaSettings
 
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+#from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List, Dict, Optional
 import logging
@@ -25,10 +27,16 @@ logger = logging.getLogger(__name__)
 class VectorStore:
     def __init__(self):
         logger.info("Initialize Embeddings..")
-        self.embeddings = HuggingFaceEmbeddings(
+        """self.embeddings = HuggingFaceEmbeddings(
             model_name = settings.embedding_model,
             model_kwargs = {'device': settings.embedding_device},
             encode_kwargs={'normalize_embeddings': True}
+        )"""
+
+        # Use HuggingFace API for embeddings (saves 300MB RAM!)
+        self.embeddings = HuggingFaceInferenceAPIEmbeddings(
+            api_key=settings.HuggingFace_Token,
+            model_name="sentence-transformers/all-MiniLM-L6-v2"  # Same model!
         )
 
         logger.info("🔧 Initializing ChromaDB...")

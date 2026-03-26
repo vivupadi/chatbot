@@ -78,6 +78,11 @@ jobs:
             docker push vivupadi/rag-backend:latest
             docker push vivupadi/rag-frontend:latest
             docker push vivupadi/rag-db-update:latest
+
+            # Post-push cleanup
+            echo "🧹 Post-deployment cleanup..."
+            docker image prune -af
+            docker builder prune -af
             
             # Update Kubernetes deployments
             echo "🔄 Restarting Kubernetes deployments..."
