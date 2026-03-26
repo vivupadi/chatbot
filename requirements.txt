@@ -2,7 +2,7 @@
 langchain==1.0.0
 langchain-community==0.4.1
 langchain-huggingface==1.0.0
-langchain-text-splitters==0.0.1
+langchain-text-splitters>=0.3.0
 #sentence-transformers==2.7.0
 chromadb==1.2.1
 huggingface_hub>=0.23.0
@@ -14,7 +14,7 @@ httpx>=0.24.0
 # Document Processing
 pypdf==4.1.0
 beautifulsoup4==4.12.3
-requests==2.31.0
+requests==2.32.5
 python-docx==1.1.0
 PyPDF2==3.0.1
 
@@ -25,8 +25,8 @@ python-multipart==0.0.9
 
 # Utilities
 python-dotenv==1.0.1
-pydantic==2.6.3
-pydantic-settings==2.2.1
+pydantic==2.7.4
+pydantic-settings>=2.10.1
 
 # Development
 pytest==8.1.1
