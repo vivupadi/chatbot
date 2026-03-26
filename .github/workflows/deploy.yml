@@ -54,23 +54,23 @@ jobs:
             
             # Build backend image
             echo "🏗️ Building backend image..."
-            docker build -f Dockerfile.backend -t vivupadi/rag-backend:latest .
+            docker build --pull --no-cache -f Dockerfile.backend -t vivupadi/rag-backend:latest .
 
             # Clean up immediately after build to free space
             docker builder prune -f
             docker image prune -f
-            
+
             # Build frontend image
             echo "🏗️ Building frontend image..."
-            docker build -f Dockerfile.frontend -t vivupadi/rag-frontend:latest .
+            docker build --pull --no-cache -f Dockerfile.frontend -t vivupadi/rag-frontend:latest .
 
             # Clean up after frontend
             docker builder prune -f
 
-            
+
             # Build db-update image (optional)
             echo "🏗️ Building db-update image..."
-            docker build -f Dockerfile.db-update -t vivupadi/rag-db-update:latest .
+            docker build --pull --no-cache -f Dockerfile.db-update -t vivupadi/rag-db-update:latest .
 
             # Clean up after db-update
             docker builder prune -f
