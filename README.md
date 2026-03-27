@@ -59,21 +59,13 @@ Chunking strategy initially used was fixed chunking with  chunk_size(300) and ch
     Original Document    
     ↓      
     [chunk_documents()]
-    
-    ↓
-        
+    ↓    
     Text Chunks (still text!)
-    
-    ↓
-        
+    ↓     
     [add_texts() calls embedding_function.embed_query()]
-    
-    ↓
-        
+    ↓   
     Each chunk → HuggingFaceEmbeddings → Vector
-    
-    ↓
-        
+    ↓   
     ChromaDB stores:
       - Text: "chunk content"
       - Vector: [0.1, 0.2, ...]
