@@ -18,6 +18,7 @@ from src.utils.config import settings
 from src.ml.llm_model import HuggingFaceInferenceLLM
 from src.ml.ollama import OllamaLLM
 from src.ml.hybrid_llm import HybridLLM
+from src.ml.reranker import JinaReranker
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,6 +39,9 @@ class RAGengine:
         self._init_ollama()           #init ollama api
         self._init_hybrid_llm()       #init hybrid llm with the above two models and the strategy defined in config
 
+        # Initialize reranker
+        self._init_reranker()
+        
         # Setup RAG chain
         self._setup_chain()
 
@@ -72,12 +76,37 @@ class RAGengine:
         self.llm = HybridLLM(self.featherless_llm, self.ollama_llm, self.strategy)
         logger.info(f"✅ Hybrid LLM initialized with strategy: {self.strategy}")
 
+    
+    def _init_reranker(self):
+        if settings.ENABLE_RERANKING:
+            try:
+                api_key = settings.JINA_API_KEY or os.getenv("JINA_API_KEY")
+                if not api_key:
+                    raise ValueError("JINA_API_KEY required")
+
+                self.reranker = JinaReranker(
+                    api_key=api_key,
+                    model=settings.RERANKER_MODEL
+                )
+                self.enable_reranking = True
+                logger.info(f"✅ Jina Reranker enabled: {settings.RERANKER_MODEL}")
+
+            except Exception as e:
+                logger.warning(f"⚠️ Reranker initialization failed: {e}")
+                self.reranker = None
+                self.enable_reranking = False
+        else:
+            self.reranker = None
+            self.enable_reranking = False
+            logger.info("ℹ️ Reranking disabled")
+
+
     def _format_docs(self, docs):
         """Format retrieved documents for context"""
         return "\n\n".join([doc.page_content for doc in docs])
 
     def _setup_chain(self):
-        template = """You are a helpful AI assistant. Use the following context to answer the questions about Vivek.
+        template = """You are a informative AI assistant. Use the following context to answer the questions about Vivek.
         If you don't know the answer, just say you don't know. Don't make up information.
 
         Context:
@@ -90,13 +119,42 @@ class RAGengine:
         prompt = PromptTemplate.from_template(template)
         print(f"✅ Prompt created")
 
+        def hybrid_retriever(query):
+            # Step 1: Hybrid search
+            k = settings.RERANKER_TOP_K if self.enable_reranking else settings.top_k_results
+            docs = self.vector_store.hybrid_search(query, k=k, alpha=0.5)
+
+            # Step 2: Rerank if enabled
+            if self.enable_reranking and self.reranker and len(docs) > 0:
+                doc_texts = [doc.page_content for doc in docs]
+                reranked_indices = self.reranker.rerank(
+                    query,
+                    doc_texts,
+                    top_k=settings.top_k_results
+                )
+
+                # If reranking succeeded, use reranked results
+                if reranked_indices:
+                    docs = [docs[idx] for idx, _ in reranked_indices]
+                    logger.info(f"✅ Using reranked results: {len(docs)} docs")
+                else:
+                    # If reranking failed, return hybrid search results without reranking
+                    docs = docs[:settings.top_k_results]
+                    logger.info(f"⚠️ Reranking failed, using hybrid search results: {len(docs)} docs")
+
+            return docs
+
+        # Wrap in RunnableLambda
+        retriever = RunnableLambda(hybrid_retriever)
+        
+        print(f"✅ Hybrid retriever created")
+
         # Get retriever from vector store
-        retriever = self.vector_store.get_retriever()
-        print(f"✅ Retriever created")
+        #retriever = self.vector_store.get_retriever()
+        #print(f"✅ Retriever created")
 
         # Create RAG chain using LCEL (LangChain Expression Language)
         # CORRECT LCEL CHAIN STRUCTURE
-        
         self.rag_chain = (
             RunnableParallel({
                 "context": retriever | RunnableLambda(self._format_docs),
@@ -110,7 +168,7 @@ class RAGengine:
         # Store retriever for getting source documents separately
         self.retriever = retriever
 
-        logger.info("✅ RAG chain configured")
+        logger.info("✅ RAG chain configured with hybrid search and reranking")
 
     def query(self, question):
 

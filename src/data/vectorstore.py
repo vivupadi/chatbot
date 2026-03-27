@@ -11,6 +11,8 @@ import logging
 from pathlib import Path
 from src.utils.config import settings
 
+from rank_bm25 import BM25Okapi
+
 import json
 import os
 from dotenv import load_dotenv
@@ -219,6 +221,97 @@ class VectorStore:
         logger.warning("⚠️  Deleting vector store collection...")
         self.client.delete_collection("rag_documents")
         logger.info("✅ Collection deleted")
+
+    def _init_bm25(self):
+        """Initialize BM25 index from existing documents"""
+        logger.info("🔧 Initializing BM25 index...")
+        
+        try:
+            # Get all documents from ChromaDB
+            all_docs = self.vector_store.get()
+            
+            if not all_docs or not all_docs.get('documents'):
+                logger.warning("⚠️ No documents found for BM25 indexing")
+                self.bm25 = None
+                self.bm25_docs = []
+                self.bm25_metadatas = []
+                return
+            
+            # Store documents and metadata
+            self.bm25_docs = all_docs['documents']
+            self.bm25_metadatas = all_docs.get('metadatas', [{}] * len(self.bm25_docs))
+            
+            # Tokenize documents for BM25 (simple whitespace tokenization)
+            tokenized_docs = [doc.lower().split() for doc in self.bm25_docs]
+            
+            # Create BM25 index
+            self.bm25 = BM25Okapi(tokenized_docs)
+        
+            logger.info(f"✅ BM25 index created with {len(self.bm25_docs)} documents")
+            
+        except Exception as e:
+            logger.error(f"❌ BM25 initialization failed: {e}")
+            self.bm25 = None
+            self.bm25_docs = []
+            self.bm25_metadatas = []
+
+    def hybrid_search(self, query: str, k: int = 10, alpha: float = 0.5):
+        """
+        Hybrid search combining BM25 (keyword) + Vector (semantic)
+        """
+        # Initialize BM25 if not already done
+        if not hasattr(self, 'bm25') or self.bm25 is None:
+            self._init_bm25()
+        
+        # If BM25 not available, fallback to vector-only
+        if self.bm25 is None:
+            logger.warning("⚠️ BM25 not available, using vector search only")
+            return self.vector_store.similarity_search(query, k=k)
+        
+        # 1. BM25 search (keyword-based)
+        tokenized_query = query.lower().split()
+        bm25_scores = self.bm25.get_scores(tokenized_query)
+        
+        # Normalize BM25 scores to [0, 1]
+        max_bm25 = max(bm25_scores) if max(bm25_scores) > 0 else 1
+        bm25_scores_norm = [score / max_bm25 for score in bm25_scores]
+        
+        # 2. Vector search (semantic)
+        vector_results = self.vector_store.similarity_search_with_score(query, k=len(self.bm25_docs))
+        
+        # Create mapping: content -> (vector_score, doc)
+        vector_score_map = {}
+        for doc, score in vector_results:
+            # ChromaDB uses distance (lower is better), convert to similarity
+            similarity = 1 / (1 + score)  # Convert distance to similarity [0, 1]
+            vector_score_map[doc.page_content] = (similarity, doc)
+        
+        # 3. Combine scores using alpha weighting
+        combined_scores = []
+        for i, (doc_content, metadata) in enumerate(zip(self.bm25_docs, self.bm25_metadatas)):
+            bm25_score = bm25_scores_norm[i]
+            
+            # Get vector score if available
+            if doc_content in vector_score_map:
+                vector_score, doc_obj = vector_score_map[doc_content]
+            else:
+                vector_score = 0
+                # Create document object
+                from langchain_core.documents import Document
+                doc_obj = Document(page_content=doc_content, metadata=metadata)
+            
+            # Hybrid score: weighted combination
+            hybrid_score = (1 - alpha) * bm25_score + alpha * vector_score
+            
+            combined_scores.append((hybrid_score, doc_obj))
+        
+        # 4. Sort by hybrid score and return top k
+        combined_scores.sort(key=lambda x: x[0], reverse=True)
+        top_docs = [doc for _, doc in combined_scores[:k]]
+        
+        logger.info(f"✅ Hybrid search: returned {len(top_docs)} documents (α={alpha})")
+        
+        return top_docs
 
 
 # Example usage

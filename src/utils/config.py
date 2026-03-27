@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     Featherless_ai_key_new: str = ''
     huggingface_model: str = "mistralai/Mistral-7B-Instruct-v0.2"
 
+    # Reranking config (Jina AI)
+    ENABLE_RERANKING: bool = True
+    JINA_API_KEY: str = ''  
+    RERANKER_MODEL: str = "jina-reranker-v2-base-multilingual"
+    RERANKER_TOP_K: int = 10  # Retrieve more, rerank to top 3
+
     # Vector Store
     vector_store_type: Literal["chroma", "faiss"] = "chroma"
     top_k_results: int = 3
