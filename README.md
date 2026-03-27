@@ -49,7 +49,7 @@ Simple html-based UI that fetches the endpoints from FastAPI server.
 ![til](https://github.com/vivupadi/chatbot/blob/main/chatbot_snippet.jpg)
 
 ### BackEnd
-#### VectorStore
+#### 1. VectorStore
 Chromadb is used as the vectorstore. The embedding models used was "sentence-transformers/all-MiniLM-L6-v2"
 
 Chunking strategy initially used was fixed chunking with  chunk_size(300) and chunk_overlap(50) (Since the documents are sourced from personal CV and a website portfolio).
@@ -71,12 +71,12 @@ Chunking strategy initially used was fixed chunking with  chunk_size(300) and ch
       - Vector: [0.1, 0.2, ...]
       - Metadata: {...}
     
-#### LLM model
+#### 2. LLM model
 The LLM model used is mistralai/Mistral-7B-Instruct-v0.2 called using Featherless_ai.
 
 Fallback(In case API fails) - Ollama TinyLM
 
-#### Retrieval
+#### 3. Retrieval
 
 Advanced retrieval strategies were implemented:
 
@@ -90,13 +90,13 @@ hybrid_score = (1 - alpha) * bm25_score + alpha * vector_score
 
 ##### Reranking
 
-Reranking was initialized to compare the query with the retrieved top_10 chunks and filter the best top_3 chunks to the retriever.
+Reranking was initialized to compare the query with the retrieved top_10 chunks and filter the best top_3 chunks.
 
 Due to RAM and storage constraints on the server, I preferred to use JINA AI API for reranking.
 
-Reranking improves the Context Precision of the retriever. Thereby providing the best relevant chunks to the retriever.
+Reranking improves the retriever's Context Precision. Thereby providing the best relevant chunks to the retriever.
 
-#### FastAPI
+#### 4. FastAPI
 - Backend server to create API endpoints
 - Receiving user questions
 - Processing queries through the RAG system
