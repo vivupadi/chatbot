@@ -84,7 +84,7 @@ Fallback(In case API fails) - Ollama TinyLM
 
 Advanced retrieval strategies were implemented:
 
-##### Hybrid-Search
+##### Hybrid-Search:
 
 Rather than Dense Search, which focuses on the semantic meaning of the retrieved document, I implemented a hybrid approach with Dense + Sparse(BM25) search algorithm.
 
@@ -92,7 +92,7 @@ The result from Dense(vector_score) + Sparse(bm25_score) is combined using Alpha
 
 hybrid_score = (1 - alpha) * bm25_score + alpha * vector_score
 
-##### Reranking
+##### Reranking:
 
 Reranking was initialized to compare the query with the retrieved top_10 chunks and filter the best top_3 chunks.
 
