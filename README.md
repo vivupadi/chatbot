@@ -1,7 +1,7 @@
-## Personalized RAG Based Chatbot
+# Personalized Advanced RAG-Based Chatbot
 An Enterprise-grade chatbot to fetch answers about Vivek's Professional Life. Hosted on Hetzner Cloud using Kubernetes(K3s). (In progress)
 
-The Chatbot uses hybrid approach to answer query:
+The Chatbot uses a hybrid approach to answer query:
 
 - Main LLM model: Through Featherless API using Mistral 7b model
 
@@ -23,6 +23,8 @@ Configmap can be edited to select the architecture for the backend LLM model:
 - Langchain
 - HuggingFace
 - FeatherLess API
+- Ollama
+- JINA reranker API
 - FastAPI
 - Docker
 - Kubernetes
@@ -49,14 +51,13 @@ Simple html-based UI that fetches the endpoints from FastAPI server.
 ### BackEnd
 #### VectorStore
 Chromadb is used as the vectorstore. The embedding models used was "sentence-transformers/all-MiniLM-L6-v2"
-Chunking strategy initially used was fixed chunking with  chunk_size(300) and chunk_overlap(50) (Since the documents are sourced from personal cv and website portfolio).
+
+Chunking strategy initially used was fixed chunking with  chunk_size(300) and chunk_overlap(50) (Since the documents are sourced from personal CV and a website portfolio).
 
 - What happens inside the vectorstore.py script???
 
-    Original Document
-    
-    ↓
-        
+    Original Document    
+    ↓      
     [chunk_documents()]
     
     ↓
@@ -80,6 +81,28 @@ Chunking strategy initially used was fixed chunking with  chunk_size(300) and ch
     
 #### LLM model
 The LLM model used is mistralai/Mistral-7B-Instruct-v0.2 called using Featherless_ai.
+
+Fallback(In case API fails) - Ollama TinyLM
+
+#### Retrieval
+
+Advanced retrieval strategies were implemented:
+
+##### Hybrid-Search
+
+Rather than Dense Search, which focuses on the semantic meaning of the retrieved document, I implemented a hybrid approach with Dense + Sparse(BM25) search algorithm.
+
+The result from Dense(vector_score) + Sparse(bm25_score) is combined using Alpha weighting(0.5) to get a hybrid_score: 
+
+hybrid_score = (1 - alpha) * bm25_score + alpha * vector_score
+
+##### Reranking
+
+Reranking was initialized to compare the query with the retrieved top_10 chunks and filter the best top_3 chunks to the retriever.
+
+Due to RAM and storage constraints on the server, I preferred to use JINA AI API for reranking.
+
+Reranking improves the Context Precision of the retriever. Thereby providing the best relevant chunks to the retriever.
 
 #### FastAPI
 - Backend server to create API endpoints
@@ -117,21 +140,25 @@ K3 Manifests(yaml):
  
 ## Monitoring 
 
-Prometheues - For metrics and monitoring
-Grafana - For Dashboard & Visualization
+- Prometheues - For metrics and monitoring
+
+- Grafana - For Dashboard & Visualization
 
 ## Next Steps
 ### Evaluation
 
 Current approach uses Golden Set Manual evaluations. Set of expected answers are compared with generated responses.
 Next Plan:
-RAGAS. Four core metrics:
-Faithfulness — does the answer stick to the retrieved context, or is the LLM hallucinating? Score 0–1. Most important metric. If your answer says something not present in the retrieved chunks, faithfulness is low.
-Answer Relevancy — does the answer actually address the question asked? A faithful but off-topic answer scores low here.
-Context Precision — of the chunks you retrieved, how many were actually relevant? If you retrieve 5 chunks but only 1 was useful, precision is low. This tells you your retriever is noisy.
-Context Recall — did you retrieve all the chunks needed to answer the question? If the answer requires information from 3 chunks but you only retrieved 1, recall is low.
 
-### Cache using redis 
+RAGAS. Four core metrics:
+
+Faithfulness — does the answer stick to the retrieved context, or is the LLM hallucinating? Score 0–1. Most important metric. If your answer says something not present in the retrieved chunks, faithfulness is low.
+
+Answer Relevancy — does the answer actually address the question asked? A faithful but off-topic answer scores low here.
+
+Context Precision — of the chunks you retrieved, how many were actually relevant? If you retrieve 5 chunks but only 1 was useful, precision is low. This tells you your retriever is noisy.
+
+Context Recall — did you retrieve all the chunks needed to answer the question? If the answer requires information from 3 chunks but you only retrieved 1, recall is low.
 
 
 ## LICENSES
