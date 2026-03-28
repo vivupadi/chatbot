@@ -4,25 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAG Chatbot</title>
+    <!-- Markdown support -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body { padding: 50px; font-family: Arial; }
-        #chat { border: 1px solid #ccc; height: 300px; padding: 10px; overflow-y: scroll; }
-        input { width: 70%; padding: 10px; }
-        button { padding: 10px 20px; }
+        body { max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        #chat { background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: 400px;
+            padding: 20px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        .message {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .message strong {
+            color: #667eea;
+        }
+
+        .message code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .time {
+            color: #999;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        input { flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        button { padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
 <body>
     <h2>Personalized Chatbot to answer quick queries about Vivek!</h2>
     <div id="chat"></div>
-    <input id="question" type="text" placeholder="Ask something about Vivek...">
-    <button onclick="askQuestion()">Send</button>
+
+    <div class="input-row">
+        <input id="question" type="text" placeholder="Ask something about Vivek..." onkeypress="if(event.key==='Enter') askQuestion()">
+        <button id="sendBtn" onclick="askQuestion()">Send</button>
+    </div>
     <script>
         //const API_URL = 'http://localhost:8000'   //Use & merge it to for single container access 'http://localhost:8000'
         const API_URL = '/api'
         async function askQuestion(){
             const questionInput = document.getElementById('question');
-            const question = questionInput.value;
+            const question = questionInput.value.trim();
+            const sendBtn = document.getElementById('sendBtn');
 
             //show user's question in chat
             document.getElementById('chat').innerHTML += `<p><strong>You: </strong> ${question}</p>`;
@@ -45,23 +109,38 @@
                         top_k: 4
                     })
                 });
-                data = await response.json();
+                const data = await response.json();
+                const endTime = performance.now();
+                const responseTime = ((endTime - startTime) / 1000).toFixed(1);
+
+                // Remove thinking
+                document.getElementById('thinking')?.remove();
+
+                // Show answer with markdown
+                const chat = document.getElementById('chat');
+                const div = document.createElement('div');
+                div.className = 'message';
+                div.innerHTML = `<strong>Chatbot:</strong><br>${marked.parse(data.answer)}`;
+                div.innerHTML += `<div class="time">Answered in ${responseTime}s</div>`;
+                chat.appendChild(div);
+                chat.scrollTop = chat.scrollHeight;
             } catch (err) {
-                document.getElementById('chat').innerHTML += `<p><strong>Error:</strong> ${err.message}</p>`;
-                return;
-            }
+                document.getElementById('thinking')?.remove();
+                addMessage(`<strong>Error:</strong> ${err.message}`);
+                }
 
-            // Remove "Thinking..." and show answer
-            const chat = document.getElementById('chat');
-            const thinking = chat.querySelector('em');
-            if (thinking) thinking.parentElement.remove();
-
-            // Show AI's answer in chat
-            chat.innerHTML += `<p><strong>Chatbot:</strong> ${data.answer}</p>`;
-
-            // Scroll to bottom
-            chat.scrollTop = chat.scrollHeight;
+             sendBtn.disabled = false;
         }
+            // Show answer with markdown
+            function addMessage(html, id = '') {
+                const chat = document.getElementById('chat');
+                const div = document.createElement('div');
+                div.className = 'message';
+                if (id) div.id = id;
+                div.innerHTML = html;
+                chat.appendChild(div);
+                chat.scrollTop = chat.scrollHeight;
+            }
     </script>
 
 </body>
