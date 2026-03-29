@@ -95,7 +95,10 @@
             questionInput.value = '';
 
             //TAlking to the API
-            document.getElementById('chat').innerHTML += `<p><em>Thinking...</em></p>`;
+            document.getElementById('chat').innerHTML += `<p id="thinking"><em>Thinking...</em></p>`;
+
+            sendBtn.disabled = true;
+            const startTime = performance.now();
 
             let data;
             try {
