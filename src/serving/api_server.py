@@ -129,10 +129,10 @@ async def query_endpoint(request: QueryRequest):
     
 
 # Root endpoint
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return FileResponse("index.html")
+#@app.get("/")
+#async def root():
+#    """Root endpoint"""
+#    return FileResponse("index.html")
     
     #return {
     #    "message": "RAG MLOps Chatbot API",
