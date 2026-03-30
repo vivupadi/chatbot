@@ -20,7 +20,7 @@ metadata:
       more_set_headers "X-XSS-Protection: 1; mode=block";
 spec:
   rules:
-  - host: rag-chatbot.example.com
+  - host: chat.vivekpadayattil.com
     http:
       paths:
       - path: /api
@@ -44,27 +44,10 @@ spec:
             name: backend-svc
             port:
               number: 8000
----
-# Alternative: Direct LoadBalancer Service (recommended for Oracle)
-apiVersion: v1
-kind: Service
-metadata:
-  name: rag-loadbalancer
-  namespace: rag-dev
-  annotations:
-    service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
-    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
-    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100"
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-    targetPort: 8000
-    protocol: TCP
-    name: http
-  selector:
-    app: rag-backend
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10800  # 3 hours
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-svc
+            port:
+              number: 80
