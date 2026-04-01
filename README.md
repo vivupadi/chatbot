@@ -117,9 +117,12 @@ Key Features:**
 ## Hosting & Scaling
 Docker Image --> Hetzner Cloud --> Kubernetes(K3s)
 
+The frontend is called using ingress --> Calls out the host chat.vivekpadayattil.com subdomain..
+
 K3 Manifests(yaml): 
 - Namespace
 - Secrets
+- Ingress
 - Backend:
   - Backend-depl
   - Backend-svc (type ClusterIP)
