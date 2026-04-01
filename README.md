@@ -32,6 +32,7 @@ Configmap can be edited to select the architecture for the backend LLM model:
 - HTML/CSS
 - Prometheus/Grafana
 - PyTest
+- CI/CD
 
   
 Multi Image approach: 
@@ -140,6 +141,13 @@ K3 Manifests(yaml):
 
 - Grafana - For Dashboard & Visualization
 
+## CI/CD Deployment
+
+Updates and deploys the changes to Hetzner Cloud. 
+
+**caching issue observed while building docker images. Therefore applied a clean --no-cache building approach.
+
+
 ## Next Steps
 ### Evaluation
 
@@ -155,6 +163,8 @@ Answer Relevancy — does the answer actually address the question asked? A fait
 Context Precision — of the chunks you retrieved, how many were actually relevant? If you retrieve 5 chunks but only 1 was useful, precision is low. This tells you your retriever is noisy.
 
 Context Recall — did you retrieve all the chunks needed to answer the question? If the answer requires information from 3 chunks but you only retrieved 1, recall is low.
+
+### Setting up NeMo guardrails
 
 
 ## LICENSES
