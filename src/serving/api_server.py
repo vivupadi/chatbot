@@ -8,6 +8,11 @@ import time
 from pathlib import Path
 import uvicorn
 
+from fastapi import FastAPI
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 from fastapi.responses import FileResponse
 
 from src.ml.rag_updated import RAGengine
@@ -98,6 +103,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+#Rate limiter setup
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 Instrumentator().instrument(app).expose(app)   #Prometheus metric initialized
 
 
@@ -112,14 +122,15 @@ app.add_middleware(
 
 #Query endpoint
 @app.post("/query", response_model = QueryResponse)
-async def query_endpoint(request: QueryRequest):
+@limiter.limit("30/hour")
+async def query_endpoint(request: Request, body: QueryRequest):
     try:
-        logger.info(f"Received query: {request.question}")
+        logger.info(f"Received query: {body.question}")
         
         # Measure LLM time
         start = time.time()
         #Query rag engine
-        response = rag_engine.query(request.question)
+        response = rag_engine.query(body.question)
         llm_latency.observe(time.time() - start)
 
         return QueryResponse(**response)
