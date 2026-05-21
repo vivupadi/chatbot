@@ -114,6 +114,11 @@ Key Features:**
 - Automatic interactive API docs at `/docs`
 - Type-safe API development
 
+#### 5. Optimization
+##### Rate limiter
+
+Rate Limiting added to FastAPI using slowapi --> Sets a limit of 30 queries per hour!
+
 ## Hosting & Scaling
 Docker Image --> Hetzner Cloud --> Kubernetes(K3s)
 
