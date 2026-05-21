@@ -119,6 +119,8 @@ Key Features:**
 
 Rate Limiting added to FastAPI using slowapi --> Sets a limit of 30 queries per hour!
 
+(As next step change the rate limiter to Traefik middleware)
+
 ## Hosting & Scaling
 Docker Image --> Hetzner Cloud --> Kubernetes(K3s)
 
