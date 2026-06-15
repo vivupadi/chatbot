@@ -129,7 +129,7 @@ The frontend is called using ingress --> Calls out the host chat.vivekpadayattil
 K3 Manifests(yaml): 
 - Namespace
 - Secrets
-- Ingress
+- Ingress (Reverse proxy (handles DNS) : sub-domain calls --> IP Address)
 - Backend:
   - Backend-depl
   - Backend-svc (type ClusterIP)
