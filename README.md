@@ -176,6 +176,8 @@ Context Recall — did you retrieve all the chunks needed to answer the question
 
 ### Setting up NeMo guardrails
 
+### Setup as Endpoints for each service (Micro Services architecture)
+
 
 ## LICENSES
 
